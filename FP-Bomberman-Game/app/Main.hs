@@ -14,3 +14,21 @@ main = playIO (InWindow "Counter" (400, 400) (0, 0)) -- Or FullScreen
               view             -- View function
               input            -- Event function
               step             -- Step function
+              startGame :: IO ()
+              startGame =  do putStrLn("Press a key to start the game")
+                              getLine
+                              putStrLn("Enter your name: ")
+                              name <- getLine
+                              let gameState = initGame $ setPlayer name
+                              putStr $ show(player gameState)
+              
+              
+startGame :: IO ()
+startGame =  do putStrLn("Press a key to start the game")
+                getLine
+                putStrLn("Enter your name: ")
+                name <- getLine
+                let gameState = initGame $ setPlayer name
+                putStr $ show(player gameState)
+
+           
