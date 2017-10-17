@@ -1,44 +1,48 @@
 module Model where
-    
-    class Movable a where
-        move :: a -> (Int, Int) -> a
-        x :: Int
-        y :: Int
-    
-    class Living a where
-        die :: a -> a
-        health :: Int
-        name :: String
+
+    class HasPosition a where
+        pos :: a -> (Int, Int)
     
     class Destructible a where
         getDestroyed :: a -> b
-    
+        
     data GameState = GameState {
        player   :: Player,
-       grid     :: Grid,
-       enemies  :: [Enemy]
-       --evt: level
+       grid     :: Grid
+  --     enemies  :: [Enemy]
     }
     
-    data Enemy = Enemy {}
+    data Player = Player {
+        name :: String,
+        health :: Int,
+        playerPosition :: (Int, Int),
+        sprite :: String
+    }
+
+    data Bomb = Bomb {
+        explosionRadius :: (Int, Int),
+        explodeTime :: Int,
+        bombPosition :: (Int,Int)
+    }
+
     
-    data Player = Player {}
-    
-    instance Movable Player where
-        x n = n
-        y m = m
-        move Player (n,m) = Player
+    instance HasPosition Player where
+        pos p = playerPosition p
+
+    instance HasPosition Bomb where
+        pos b = bombPosition b
     
     instance Show Player where
        show p = "Player: " ++ name p ++ " Health: " ++ show(health p)
     
     data Field = Field {
-       gameObject :: GameObject
+        fieldPosition :: (Int,Int),
+        gameObject :: GameObject
     }
+
+    instance HasPosition Field where 
+        pos f = fieldPosition f
     
     type Grid = [Field]
     
     data GameObject = Powerup | MetalBlock | StoneBlock | Empty
-    
-    initialState :: GameState
-    initialState = GameState ShowNothing 0 (Player 100 "Jerry")
