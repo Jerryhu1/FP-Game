@@ -7,9 +7,8 @@ module Model where
         getDestroyed :: a -> b
         
     data GameState = GameState {
-       player   :: Player,
-       grid     :: Grid
-  --     enemies  :: [Enemy]
+        player   :: Player,
+        grid     :: Grid
     }
     
     data Player = Player {
@@ -25,7 +24,22 @@ module Model where
         bombPosition :: (Int,Int)
     }
 
+    data Field = Field {
+        fieldPosition :: (Int,Int),
+        gameObject :: GameObject
+    }
+
+    type Grid = [Field]
+
+    data Block = Block {
+        
+    }
     
+    data GameObject = Powerup | MetalBlock | StoneBlock | Empty
+
+    instance HasPosition Field where 
+        pos f = fieldPosition f
+
     instance HasPosition Player where
         pos p = playerPosition p
 
@@ -33,16 +47,18 @@ module Model where
         pos b = bombPosition b
     
     instance Show Player where
-       show p = "Player: " ++ name p ++ " Health: " ++ show(health p)
+        show p = "Player: " ++ name p ++ " Health: " ++ show(health p)
     
-    data Field = Field {
-        fieldPosition :: (Int,Int),
-        gameObject :: GameObject
-    }
+    initPlayer :: Player
+    initPlayer = Player "Jerry" 100 (1,1) "test"
 
-    instance HasPosition Field where 
-        pos f = fieldPosition f
+    initGame :: GameState
+    initGame = GameState initPlayer $ createGrid 5 
     
-    type Grid = [Field]
+    createGrid :: Int -> Grid
+    createGrid n = [Field (x,y) Empty| x <- [0..n], y <- [0..n]]
     
-    data GameObject = Powerup | MetalBlock | StoneBlock | Empty
+    setNewPlayer :: String -> Player
+    setNewPlayer name = Player name 100 (0,0) "player.png"
+
+    
