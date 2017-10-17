@@ -61,4 +61,4 @@ module Model where
     setNewPlayer :: String -> Player
     setNewPlayer name = Player name 100 (0,0) "player.png"
 
-    
+    --asdasdasdasdsd
