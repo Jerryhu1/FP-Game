@@ -17,6 +17,7 @@ module Model where
        player   :: Player,
        grid     :: Grid,
        enemies  :: [Enemy]
+       --evt: level
     }
     
     data Enemy = Enemy {}
