@@ -1,7 +1,8 @@
 module Model where
 
-    class HasPosition a where
+    class Positioned a where
         pos :: a -> (Int, Int)
+    --  move :: a -> (Int, Int) -> a
     
     class Destructible a where
         getDestroyed :: a -> b
@@ -24,6 +25,7 @@ module Model where
         bombPosition :: (Int,Int)
     }
 
+
     data Field = Field {
         fieldPosition :: (Int,Int),
         gameObject :: GameObject
@@ -31,26 +33,26 @@ module Model where
 
     type Grid = [Field]
 
-    data Block = Block {
-        
+    data Block  = Block {
     }
     
-    data GameObject = Powerup | MetalBlock | StoneBlock | Empty
+    data GameObject = PowerUp | MetalBlock | StoneBlock | Empty
+-- Misschien PowerUp onderdeel maken van Metalblock?
 
-    instance HasPosition Field where 
+    instance Positioned Field where 
         pos f = fieldPosition f
 
-    instance HasPosition Player where
+    instance Positioned Player where
         pos p = playerPosition p
 
-    instance HasPosition Bomb where
+    instance Positioned Bomb where
         pos b = bombPosition b
     
     instance Show Player where
         show p = "Player: " ++ name p ++ " Health: " ++ show(health p)
     
     initPlayer :: Player
-    initPlayer = Player "Jerry" 100 (1,1) "test"
+    initPlayer = Player "Jerry" 100 (0,0) "test"
 
     initGame :: GameState
     initGame = GameState initPlayer $ createGrid 5 
@@ -58,6 +60,8 @@ module Model where
     createGrid :: Int -> Grid
     createGrid n = [Field (x,y) Empty| x <- [0..n], y <- [0..n]]
     
+    --hier een rng om random blokken in het veld te zetten?
+
     setNewPlayer :: String -> Player
     setNewPlayer name = Player name 100 (0,0) "player.png"
 
