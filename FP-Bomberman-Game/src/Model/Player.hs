@@ -15,7 +15,7 @@ module Model.Player where
 
 
      instance Positioned Player where
-        pos p = playerPosition p
+        pos = playerPosition
 
      instance Show Player where
-        show p = "Player: " ++ name p ++ " Health: " ++ show(health p)
+        show p = show(pos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
