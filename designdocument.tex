@@ -12,11 +12,11 @@
 		\subsection{Player}
 		The player will control a character which can walk around the map and place bombs. The player can move the character by using WASD or arrows of a keyboard. By pressing spacebar he/she can plant a bomb. 
 		\subsection{Map}			
-			The map is a grid that contains several blocks which can be either destructible or indestructible by bombs. The indestructible blocks are placed every two blocks on the field (figure..) and the destructible blocks are randomly placed on the map. The player and his/her enemies will first have to destroy several blocks to reach each other. Destructible blocks can also drop power-ups which enhances the abilities of a player. 
+			The map is a grid that contains several blocks which can be either destructible or indestructible by bombs. The indestructible blocks are placed every two blocks on the field. The destructible blocks are randomly placed on the map. The player and his/her enemies will first have to destroy several blocks to reach each other. Destructible blocks can also drop power-ups which enhances the abilities of a player. 
 		
 		\subsection{Enemies}
 		
-		Enemies in the game will move around the map randomly. The enemy can be defeated by hitting it with an explosion from a bomb. When a player intersects with an enemy he/she will lose health. 
+		Enemies in the game will move around the map randomly. The enemy can be defeated by hitting it with an explosion from a bomb. When a player intersects with an enemy he/she will lose health. The enemies themselves can not plant bombs.
 		
 		\subsection{Power-ups}
 		Blocks can drop several power-ups:
@@ -42,18 +42,35 @@
 		\subsection{Data types}
 		The following data types are described by their names and attributes
 			\begin{itemize}
-				\item Player: position, health
-				\item Enemy: position, health
-				\item Field: X, Y, GameObject (object inside the field)
-				\item Powerup: SpeedBoost | DropAmount | ExplosionSize
-				\item FieldObjects: Block | IndestructableBlock | Empty
-				\item GameState: Player, [Enemy], Grid, Paused
+				\item Player
+					\begin {itemize}
+						\item playerPosition :: (Int,Int)
+						\item health :: Int
+						\item moveSpeed :: Float
+						\item direction :: Direction (Up | Down | Left | Right)
+						\item sprite :: Sprite
+					\end{itemize}
+				\item Bomb 
+					\begin{itemize}
+						\item explosionRadius :: Int
+						\item explosionTime :: Float
+						\item bombPosition :: (Int,Int)
+					\end{itemize}
+				\item Grid :: [Field]
+				\item Field 
+					\begin{itemize}
+						\item fieldPosition :: (Int, Int)
+						\item gameObject :: GameObject
+					\end{itemize}					
+				\item Powerup: SpeedBoost | DropAmount | 										ExplosionSize
+				\item GameObject :: Block | IndestructableBlock | Empty
+				\item GameState: Player, [Player], Grid, Paused
 			\end{itemize}
 				
 		\subsection{Typeclasses}
 			\begin{itemize}
-				\item Ord, Show, Eq, Num
-				\item Movable, type that can move across the grid
+				\item Positioned, type that has a position
+				\item Movable, type that can move into a direction
 				\item Living, type that can either be dead or alive
 				\item Destructible, item that can be destroyed by explosions
 			\end{itemize}
