@@ -3,10 +3,11 @@
 module View where
 
 import Graphics.Gloss
-import Model
+import Model.Model
 
 view :: GameState -> IO Picture
 view = return . viewPure
 
 viewPure :: GameState -> Picture
-viewPure gstate = color white $ text $ show $ player gstate 
+viewPure gstate = color white $ text $ show $ player gstate
+
