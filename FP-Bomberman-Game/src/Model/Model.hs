@@ -13,7 +13,7 @@ module Model.Model where
     initPlayer = Player "Jerry" 100 (0,0) (0,0) "test"
 
     initGame :: GameState
-    initGame = GameState initPlayer $ createGrid 5
+    initGame = GameState initPlayer $ createGrid
     
     --hier een rng om random blokken in het veld te zetten?
 

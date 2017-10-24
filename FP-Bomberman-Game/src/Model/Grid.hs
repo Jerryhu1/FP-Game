@@ -6,7 +6,7 @@ module Model.Grid where
     data Field = Field {
         fieldPosition :: Pos,
         gameObject :: GameObject
-    } deriving (Show)
+    } deriving (Show, Eq)
 
     gridSize :: Int
     gridSize = 15
@@ -17,7 +17,7 @@ module Model.Grid where
     }
 
     data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Empty
-         deriving(Show)
+         deriving(Show, Ord, Eq)
     -- Misschien PowerUp onderdeel maken van Metalblock?
 
     instance Positioned Field where
@@ -37,8 +37,24 @@ module Model.Grid where
         If position is uneven, draw a metal block, otherwise grass
     -}
     setBlocks :: Grid -> Grid
-    setBlocks (x:[]) | mod (getX x) 2 > 0 && mod (getY x) 2 > 0 = [Field (getPos x) MetalBlock]
+    setBlocks (x:[]) | getX x `mod` 2 > 0 && getY x `mod` 2 > 0 = [Field (getPos x) MetalBlock]
                      | otherwise = [x]
-    setBlocks (x:xs) | mod (getX x) 2 > 0 && mod (getY x) 2 > 0 = (Field (getPos x) MetalBlock) : setBlocks xs
+    setBlocks (x:xs) | getX x `mod` 2 > 0 && getY x `mod` 2 > 0 = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
-                     
+
+    {-
+    randomNumber :: Int
+    randomNumber = fst $ next range
+                   where range = genRange (0,6)
+
+    asdf :: Grid -> IO Grid
+    asdf g = 
+    setBreakableBlocks :: Grid -> IO Grid 
+    setBreakableBlocks = map setBreakableBlock
+
+    setBreakableBlock :: Field -> IO Field
+    setBreakableBlock f = do randomNumber <- randomIO
+                             let number = randomNumber 6
+                             if number > 0 then return $ f {gameObject = StoneBlock}
+                             else return f
+        -}

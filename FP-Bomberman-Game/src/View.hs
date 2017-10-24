@@ -13,7 +13,7 @@ view = return . viewPure
 
 viewPure :: GameState -> Picture
 viewPure gstate = pictures [ 
-                                drawGrid $ createGrid 13,
+                                drawGrid $ grid gstate,
                                 drawPlayer $ player gstate
                            ]
 
@@ -35,9 +35,8 @@ drawGrass = color green $ rectangleSolid blockSize blockSize
 drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
-drawBomb :: Field -> Picture
-drawBomb f = translate' pos $ color red $ circleSolid 30
-            where pos = fieldPosition $ setFieldPosToPixels f
+drawBomb :: Picture
+drawBomb = color red $ circleSolid 15
 
 drawPlayer :: Player -> Picture
 drawPlayer p = translate' (setPosToPixels $ getPos p) $ color blue $ circleSolid 20
@@ -48,6 +47,7 @@ drawField f = case gameObject f of
                 Empty -> drawGrass
                 MetalBlock -> drawMetalBlock
                 StoneBlock -> drawStone
+                Bomb       -> drawBomb
 {-
     Takes a grid and draws rectangles on the corresponding positions
     1. Get all the positions in pixels
