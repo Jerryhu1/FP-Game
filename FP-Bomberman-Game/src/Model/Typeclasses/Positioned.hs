@@ -1,5 +1,15 @@
 module Model.Typeclasses.Positioned where
 
-    class Positioned a where
-            pos :: a -> (Int, Int)
+type Pos = (Int , Int)
+type Vel = (Int , Int)
+
+class Positioned a where
+    getPos :: a -> Pos
+    getX :: a -> Int
+    getY :: a -> Int
+
+
+class Movable a where
+    setPos :: Vel -> a -> a
+
 

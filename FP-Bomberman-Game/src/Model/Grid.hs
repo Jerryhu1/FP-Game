@@ -17,7 +17,9 @@ module Model.Grid where
     -- Misschien PowerUp onderdeel maken van Metalblock?
 
     instance Positioned Field where
-         pos f = fieldPosition f
+         getPos f = fieldPosition f
+         getX f = fst $ getPos f
+         getY f = fst $ getPos f
 
     {-
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x

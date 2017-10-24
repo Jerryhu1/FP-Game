@@ -1,21 +1,28 @@
-module Model.Player where
+module Model.Player where    
+    
+import Model.Typeclasses.Positioned
 
-     import Model.Typeclasses.Positioned
+data Player = Player {
+        name :: String,
+        health :: Int,
+        playerPosition :: Pos,
+        velocity :: Vel,
+        --moveSpeed :: Double,
+        sprite :: String
+        }
 
-     data Player = Player {
-            name :: String,
-            health :: Int,
-            playerPosition :: (Int, Int),
-            moveSpeed :: Double,
-            direction :: Direction,
-            sprite :: String
-     }
+instance Positioned Player where
+    getPos player = playerPosition player 
+    getX player = fst $ playerPosition player 
+    getY player = snd $ playerPosition player
 
-     data Direction = Up | Down | Left | Right
+instance Movable Player where
+    setPos vel player = player { playerPosition = addVel (getPos player) vel }
+        where addVel (x,y) (a,b) = (x+a,y+b)
+    
 
+instance Show Player where
+    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
 
-     instance Positioned Player where
-        pos = playerPosition
-
-     instance Show Player where
-        show p = show(pos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
+     
+     
