@@ -17,12 +17,12 @@ instance Positioned Player where
     getY player = snd $ playerPosition player
 
 instance Movable Player where
-    setPos vel player = player { playerPosition = addVel (getPos player) vel }
-        where addVel (x,y) (a,b) = (x+a,y+b)
-    
-
+    setPos pos player = player { playerPosition = pos }
+ 
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
 
-     
+
+    
+
      

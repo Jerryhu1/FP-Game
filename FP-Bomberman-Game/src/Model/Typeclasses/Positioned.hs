@@ -10,6 +10,6 @@ class Positioned a where
 
 
 class Movable a where
-    setPos :: Vel -> a -> a
+    setPos :: Pos -> a -> a
 
 

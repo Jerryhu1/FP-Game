@@ -21,22 +21,23 @@ input e gstate = return (inputKey e gstate)
 
 -- Eerste opzet lopende player
 inputKey :: Event -> GameState -> GameState
-inputKey (EventKey (SpecialKey c) _ _ _) gstate
-  | c== KeyUp     = movePlayer (0,1) gstate
-  | c== KeyLeft   = movePlayer (-1,0) gstate
-  | c== KeyDown   = movePlayer (0,-1) gstate
-  | c== KeyRight  = movePlayer (1,0) gstate
+inputKey (EventKey (SpecialKey c) Down _ _) gstate
+  | c== KeyUp     = flip modPlayer gstate $ movePlayer (0,-1)
+  | c== KeyLeft   = flip modPlayer gstate $ movePlayer (-1,0)
+  | c== KeyDown   = flip modPlayer gstate $ movePlayer (0,1)
+  | c== KeyRight  = flip modPlayer gstate $ movePlayer (1,0)
 inputKey _ gstate = gstate 
 
 
-movePlayer :: (Int,Int) -> GameState -> GameState
-movePlayer (x,y) gstate = let   orgPlayer = player gstate
-                                (p1,p2) = getPos orgPlayer                              
-                          in    gstate {player = orgPlayer {playerPosition = (p1+x,p2+y) } }
-                          --    gstate {player = setPos (getPos player + dir) player }
-                          
---modPlayer :: (Player -> Player) -> GameState -> GameState
+movePlayer :: Vel -> Player -> Player
+movePlayer vel player' = setPos (addVel vel $ getPos player') player'
 
+addVel :: Vel -> Pos -> Pos
+addVel (x,y) (x',y') = (x+x',y+y')
+
+modPlayer :: (Player -> Player) -> GameState -> GameState
+modPlayer f gstate = gstate { player = f $ player gstate}
+                          
 
 
 
