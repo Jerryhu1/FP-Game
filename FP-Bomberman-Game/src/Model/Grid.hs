@@ -8,12 +8,15 @@ module Model.Grid where
         gameObject :: GameObject
     } deriving (Show)
 
+    gridSize :: Int
+    gridSize = 15
+    
     type Grid = [Field]
 
     data Block  = Block {
     }
 
-    data GameObject = PowerUp | MetalBlock | StoneBlock | Empty
+    data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Empty
          deriving(Show)
     -- Misschien PowerUp onderdeel maken van Metalblock?
 
@@ -26,8 +29,8 @@ module Model.Grid where
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x
     TO-DO: Integrate setBlocks with createGrid
     -}
-    createGrid :: Int -> Grid
-    createGrid n = setBlocks $ [Field (x,y) Empty| y <- [0..n-3], x <- [0..n-1]]
+    createGrid :: Grid
+    createGrid = setBlocks $ [Field (x,y) Empty| y <- [0..gridSize-3], x <- [0..gridSize-1]]
 
 
     {-
