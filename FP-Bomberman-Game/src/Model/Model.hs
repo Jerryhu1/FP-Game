@@ -2,6 +2,7 @@ module Model.Model where
 
     import Model.Player
     import Model.Grid
+    import Model.Typeclasses.Positioned
 
     data GameState = GameState {
         player   :: Player,
@@ -18,5 +19,3 @@ module Model.Model where
 
     setNewPlayer :: String -> Player
     setNewPlayer name = Player name 100 (0,0) (0,0) "test"
-
-    --asdasdasdasdsd

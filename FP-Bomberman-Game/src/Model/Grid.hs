@@ -3,7 +3,7 @@ module Model.Grid where
     import Model.Typeclasses.Positioned
 
     data Field = Field {
-        fieldPosition :: (Int,Int),
+        fieldPosition :: Pos,
         gameObject :: GameObject
     } deriving (Show)
 
@@ -19,7 +19,7 @@ module Model.Grid where
     instance Positioned Field where
          getPos f = fieldPosition f
          getX f = fst $ getPos f
-         getY f = fst $ getPos f
+         getY f = snd $ getPos f
 
     {-
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x
@@ -33,13 +33,10 @@ module Model.Grid where
         If position is uneven, draw a metal block, otherwise grass
     -}
     setBlocks :: Grid -> Grid
-    setBlocks (x:[]) | mod (xPos x) 2 > 0 && mod (yPos x) 2 > 0 = [Field (fieldPosition x) MetalBlock]
+    setBlocks (x:[]) | mod (getX x) 2 > 0 && mod (getY x) 2 > 0 = [Field (getPos x) MetalBlock]
                      | otherwise = [x]
-                     where xPos f = fst $ fieldPosition f
-                           yPos f = snd $ fieldPosition f
-    setBlocks (x:xs) | mod (xPos x) 2 > 0 && mod (yPos x) 2 > 0 = (Field (fieldPosition x) MetalBlock) : setBlocks xs
+    setBlocks (x:xs) | mod (getX x) 2 > 0 && mod (getY x) 2 > 0 = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
-                     where xPos f = fst $ fieldPosition f
-                           yPos f = snd $ fieldPosition f
+                     
 
 
