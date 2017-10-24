@@ -1,6 +1,7 @@
 module Model.Grid where
 
     import Model.Typeclasses.Positioned
+    import System.Random
 
     data Field = Field {
         fieldPosition :: Pos,
@@ -38,5 +39,3 @@ module Model.Grid where
     setBlocks (x:xs) | mod (getX x) 2 > 0 && mod (getY x) 2 > 0 = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
                      
-
-

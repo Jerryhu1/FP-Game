@@ -40,7 +40,7 @@ drawBomb f = translate' pos $ color red $ circleSolid 30
             where pos = fieldPosition $ setFieldPosToPixels f
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ circleSolid 20
+drawPlayer p = translate' (setPosToPixels $ getPos p) $ color blue $ circleSolid 20
 
 drawField :: Field -> Picture
 drawField f = case gameObject f of
@@ -70,9 +70,14 @@ Grid size is set at 650. Each field in the grid has a size of 50
 Maps Pos to pixels
 -}
 setFieldPosToPixels :: Field -> Field
-setFieldPosToPixels f = Field { fieldPosition = (fromIntegral(-375+50 * xPos ) , fromIntegral(375-50* yPos ) ), gameObject = gameObject f }
+setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
                         where xPos = getX f
                               yPos = getY f
+
+setPosToPixels :: Pos -> Pos
+setPosToPixels p = ((-375+50 * xPos ),(375-50* yPos ))
+                        where xPos = fst p
+                              yPos = snd p
 
 --Translates a picture by Pos
 translate' :: Pos -> Picture -> Picture
