@@ -75,7 +75,7 @@ setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yP
                               yPos = getY f
 
 setPosToPixels :: Pos -> Pos
-setPosToPixels p = ((-375+50 * xPos ),(375-50* yPos ))
+setPosToPixels p = ((-375+xPos ),(375- yPos ))
                         where xPos = fst p
                               yPos = snd p
 

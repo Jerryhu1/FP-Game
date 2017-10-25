@@ -5,6 +5,7 @@ module Controller where
 import Model.Model
 import Model.Player
 import Model.Typeclasses.Positioned
+import Model.Grid
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
@@ -21,22 +22,35 @@ input e gstate = return (inputKey e gstate)
 
 -- Eerste opzet lopende player
 inputKey :: Event -> GameState -> GameState
-inputKey (EventKey (SpecialKey c) Down _ _) gstate
-  | c== KeyUp     = flip modPlayer gstate $ movePlayer (0,-1)
-  | c== KeyLeft   = flip modPlayer gstate $ movePlayer (-1,0)
-  | c== KeyDown   = flip modPlayer gstate $ movePlayer (0,1)
-  | c== KeyRight  = flip modPlayer gstate $ movePlayer (1,0)
+inputKey (EventKey c Down _ _) gstate
+  | c== SpecialKey KeyUp     = modPlayer gstate $ movePlayer (0,-10)
+  | c== SpecialKey KeyLeft   = modPlayer gstate $ movePlayer (-10,0)
+  | c== SpecialKey KeyDown   = modPlayer gstate $ movePlayer (0,10)
+  | c== SpecialKey KeyRight  = modPlayer gstate $ movePlayer (10,0)
+  | c== Char ','             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $player gstate, gameObject = Bomb}
+  | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $player gstate, gameObject = PowerUp}  
 inputKey _ gstate = gstate 
 
 
-movePlayer :: Vel -> Player -> Player
-movePlayer vel player' = setPos (addVel vel $ getPos player') player'
+movePlayer :: Pos -> Player -> Player
+movePlayer pos player' = setPos (addVel pos $ getPos player') player'
 
-addVel :: Vel -> Pos -> Pos
-addVel (x,y) (x',y') = (x+x',y+y')
+addVel :: Pos -> Pos -> Pos
+addVel (x,y) (x',y') = (newX, newY)
+  where newX = max 0 $ min gridSizeX $ x+x'
+        newY = max 0 $ min gridSizeY $ y+y'
 
-modPlayer :: (Player -> Player) -> GameState -> GameState
-modPlayer f gstate = gstate { player = f $ player gstate}
+addGameObject :: Field -> Grid -> Grid
+addGameObject newField [] = []
+addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
+                              | otherwise                                   = x : addGameObject newField xs
+
+
+modGrid :: GameState -> (Grid -> Grid) -> GameState
+modGrid gstate f = gstate { grid = f $ grid gstate}
+
+modPlayer :: GameState -> (Player -> Player) -> GameState
+modPlayer gstate f = gstate { player = f $ player gstate}
                           
 
 

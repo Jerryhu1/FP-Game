@@ -10,7 +10,9 @@ module Model.Model where
     }
 
     initPlayer :: Player
-    initPlayer = Player "Jerry" 100 (0,0) (0,0) "test"
+    initPlayer = Player "Jerry" 100 (0,0) 1 "test"
+
+
 
     initGame :: GameState
     initGame = GameState initPlayer $ createGrid
@@ -18,4 +20,4 @@ module Model.Model where
     --hier een rng om random blokken in het veld te zetten?
 
     setNewPlayer :: String -> Player
-    setNewPlayer name = Player name 100 (0,0) (0,0) "test"
+    setNewPlayer name = Player name 100 (0,0) 1 "test"

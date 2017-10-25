@@ -8,8 +8,21 @@ module Model.Grid where
         gameObject :: GameObject
     } deriving (Show, Eq)
 
-    gridSize :: Int
-    gridSize = 15
+    numGridX :: Int
+    numGridX = 15
+
+    numGridY :: Int
+    numGridY = 13
+
+    fieldSize :: Int
+    fieldSize = 50
+
+    gridSizeX = (numGridX-1) * fieldSize
+    gridSizeY = (numGridX-3) * fieldSize
+
+    --mogelijk ook toevoegen:
+   -- numGridY::Int
+   -- numGridY = 13
     
     type Grid = [Field]
 
@@ -30,7 +43,7 @@ module Model.Grid where
     TO-DO: Integrate setBlocks with createGrid
     -}
     createGrid :: Grid
-    createGrid = setBlocks $ [Field (x,y) Empty| y <- [0..gridSize-3], x <- [0..gridSize-1]]
+    createGrid = setBlocks $ [Field (x,y) Empty| y <- [0..numGridX-3], x <- [0..numGridX-1]]
 
 
     {-

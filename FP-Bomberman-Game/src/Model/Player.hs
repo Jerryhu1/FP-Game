@@ -1,6 +1,7 @@
 module Model.Player where    
     
 import Model.Typeclasses.Positioned
+import Model.Grid
 
 data Player = Player {
         name :: String,
@@ -12,15 +13,19 @@ data Player = Player {
         }
 
 instance Positioned Player where
-    getPos player = playerPosition player 
-    getX player = fst $ playerPosition player 
-    getY player = snd $ playerPosition player
+    getPos p = playerPosition p
+    getX p = fst $ getPos p
+    getY p = snd $ getPos p
 
 instance Movable Player where
     setPos pos player = player { playerPosition = pos }
- 
+
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
+
+getGridPos:: Player -> Pos
+getGridPos p = (/.) ((+.) (getPos p) (25,25)) (50,50)
+
 
 
     
