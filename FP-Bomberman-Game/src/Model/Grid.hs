@@ -50,9 +50,9 @@ module Model.Grid where
         If position is uneven, draw a metal block, otherwise grass
     -}
     setBlocks :: Grid -> Grid
-    setBlocks (x:[]) | getX x `mod` 2 > 0 && getY x `mod` 2 > 0 = [Field (getPos x) MetalBlock]
+    setBlocks (x:[]) | odd (getX x) && odd (getY x)  = [Field (getPos x) MetalBlock]
                      | otherwise = [x]
-    setBlocks (x:xs) | getX x `mod` 2 > 0 && getY x `mod` 2 > 0 = (Field (getPos x) MetalBlock) : setBlocks xs
+    setBlocks (x:xs) | odd (getX x) && odd (getY x)  = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
 
     {-
