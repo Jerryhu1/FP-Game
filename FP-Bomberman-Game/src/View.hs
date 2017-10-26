@@ -39,7 +39,7 @@ drawBomb :: Picture
 drawBomb = color red $ circleSolid 15
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (setPosToPixels $ getPos p) $ color blue $ circleSolid 20
+drawPlayer p = translate' (getPos p) $ color blue $ circleSolid 20
 
 drawField :: Field -> Picture
 drawField f = case gameObject f of
@@ -55,24 +55,9 @@ drawField f = case gameObject f of
     3. Return pictures
 -}
 drawGrid :: Grid -> Picture
-drawGrid grid = pictures $ map drawBox fields
-                where fields = setGridToPixels grid
-                      fieldToDraw = map drawField grid
+drawGrid grid = pictures $ map drawBox grid
+                where fieldToDraw = map drawField grid
                       drawBox field = translate' (getPos field) (drawField field)
-
---Maps the position of each field in a grid to pixels 1. Map Fields to their positions 2. Map to pixels
-setGridToPixels :: Grid -> [Field]
-setGridToPixels = map setFieldPosToPixels 
-
-
-{-
-Grid size is set at 650. Each field in the grid has a size of 50
-Maps Pos to pixels
--}
-setFieldPosToPixels :: Field -> Field
-setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
-                        where xPos = getX f
-                              yPos = getY f
 
 setPosToPixels :: Pos -> Pos
 setPosToPixels p = ((-375+xPos ),(375- yPos ))

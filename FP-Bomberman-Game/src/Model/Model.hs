@@ -10,7 +10,7 @@ module Model.Model where
     }
 
     initPlayer :: Player
-    initPlayer = Player "Jerry" 100 (0,0) 1 "test"
+    initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 
 
 

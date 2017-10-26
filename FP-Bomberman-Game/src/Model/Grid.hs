@@ -43,9 +43,12 @@ module Model.Grid where
     TO-DO: Integrate setBlocks with createGrid
     -}
     createGrid :: Grid
-    createGrid = setBlocks $ [Field (x,y) Empty| y <- [0..numGridX-3], x <- [0..numGridX-1]]
+    createGrid = map setFieldPosToPixels $ setBlocks $ [Field (x,y) Empty| y <- [0..numGridX-3], x <- [0..numGridX-1]]
 
-
+    setFieldPosToPixels :: Field -> Field
+    setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
+                            where xPos = getX f
+                                  yPos = getY f
     {-
         If position is uneven, draw a metal block, otherwise grass
     -}
