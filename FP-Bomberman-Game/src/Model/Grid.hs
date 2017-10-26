@@ -56,21 +56,4 @@ module Model.Grid where
     setBlocks (x:[]) | odd (getX x) && odd (getY x)  = [Field (getPos x) MetalBlock]
                      | otherwise = [x]
     setBlocks (x:xs) | odd (getX x) && odd (getY x)  = (Field (getPos x) MetalBlock) : setBlocks xs
-                     | otherwise = x : setBlocks xs
 
-    {-
-    randomNumber :: Int
-    randomNumber = fst $ next range
-                   where range = genRange (0,6)
-
-    asdf :: Grid -> IO Grid
-    asdf g = 
-    setBreakableBlocks :: Grid -> IO Grid 
-    setBreakableBlocks = map setBreakableBlock
-
-    setBreakableBlock :: Field -> IO Field
-    setBreakableBlock f = do randomNumber <- randomIO
-                             let number = randomNumber 6
-                             if number > 0 then return $ f {gameObject = StoneBlock}
-                             else return f
-        -}
