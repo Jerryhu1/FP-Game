@@ -3,7 +3,7 @@
 module View where
 
 import Graphics.Gloss
-import Model.Model
+import Model.GameState
 import Model.Grid
 import Model.Typeclasses.Positioned
 import Model.Player

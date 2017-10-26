@@ -1,7 +1,7 @@
 module Main where
 
 import Controller
-import Model.Model
+import Model.GameState
 import View
 
 import Graphics.Gloss.Interface.IO.Game

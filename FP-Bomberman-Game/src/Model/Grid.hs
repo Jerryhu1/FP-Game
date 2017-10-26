@@ -6,7 +6,10 @@ module Model.Grid where
     data Field = Field {
         fieldPosition :: Pos,
         gameObject :: GameObject
-    } deriving (Show, Eq)
+    } deriving (Eq)
+
+    instance Show Field where
+        show f = show(fieldPosition f) ++ " Object: " ++ show(gameObject f)
 
     numGridX :: Int
     numGridX = 15
@@ -23,11 +26,10 @@ module Model.Grid where
     --mogelijk ook toevoegen:
    -- numGridY::Int
    -- numGridY = 13
-    
+
     type Grid = [Field]
 
-    data Block  = Block {
-    }
+    data Block  = Block {}
 
     data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Empty
          deriving(Show, Ord, Eq)
@@ -43,7 +45,7 @@ module Model.Grid where
     TO-DO: Integrate setBlocks with createGrid
     -}
     createGrid :: Grid
-    createGrid = map setFieldPosToPixels $ setBlocks $ [Field (x,y) Empty| y <- [0..numGridX-3], x <- [0..numGridX-1]]
+    createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) Empty| y <- [0..numGridY-1], x <- [0..numGridX-1]]
 
     setFieldPosToPixels :: Field -> Field
     setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
@@ -53,7 +55,9 @@ module Model.Grid where
         If position is uneven, draw a metal block, otherwise grass
     -}
     setBlocks :: Grid -> Grid
+    setBlocks []     = []
     setBlocks (x:[]) | odd (getX x) && odd (getY x)  = [Field (getPos x) MetalBlock]
                      | otherwise = [x]
     setBlocks (x:xs) | odd (getX x) && odd (getY x)  = (Field (getPos x) MetalBlock) : setBlocks xs
+                     | otherwise = x : setBlocks xs
 

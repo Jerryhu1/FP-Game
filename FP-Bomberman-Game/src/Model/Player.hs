@@ -26,7 +26,8 @@ instance Show Player where
 getGridPos:: Player -> Pos
 getGridPos p = (/.) ((+.) (getPos p) (25,25)) (50,50)
 
-
+initPlayer :: Player
+initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 
     
 

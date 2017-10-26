@@ -17,7 +17,8 @@ module Model.Model where
     initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 
     initGame :: GameState
-    initGame = GameState initPlayer createGrid (mkStdGen 0)
+    initGame = GameState initPlayer createGrid (mkStdGen 0
+
 
     genNumber :: GameState -> (Int , GameState)
     genNumber gs
