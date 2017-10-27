@@ -27,7 +27,8 @@ initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 
 getGridPos:: Player -> Pos
-getGridPos p = (\(x,y) -> (f x, f y)) (getPos p)
-    where f = (\x -> x-25) . (*fieldSize) . (`div` fieldSize)
+getGridPos p = (*.) midPosPlayer f
+    where   midPosPlayer = (+.) (25,25) $ getPos p
+            f = \x -> x - ((x-25) `mod` fieldSize)
 
      
