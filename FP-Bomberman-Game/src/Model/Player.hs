@@ -23,12 +23,11 @@ instance Movable Player where
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
 
-getGridPos:: Player -> Pos
-getGridPos p = (/.) ((+.) (getPos p) (25,25)) (50,50)
-
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 
-    
+getGridPos:: Player -> Pos
+getGridPos p = (\(x,y) -> (f x, f y)) (getPos p)
+    where f = (\x -> x-25) . (*fieldSize) . (`div` fieldSize)
 
      
