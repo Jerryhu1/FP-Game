@@ -39,7 +39,13 @@ drawBomb :: Picture
 drawBomb = color red $ circleSolid 15
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ circleSolid 20
+drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid 40 blockSize
+
+{-case direction p of
+                North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
+                South -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
+                East  -> translate' (getPos p) $ color blue $ thickArc (90) (-270) 20 10
+                West  -> translate' (getPos p) $ color blue $ thickArc (-90) (-270) 20 10-}
 
 drawField :: Field -> Picture
 drawField f = case gameObject f of

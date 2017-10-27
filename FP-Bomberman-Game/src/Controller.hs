@@ -14,8 +14,13 @@ module Controller where
   -- | Handle one iteration of the game
   step :: Float -> GameState -> IO GameState
   step secs gstate =
-      return gstate
-      
+        do putStrLn $ (printCollision gstate ++ show (player gstate))
+           return gstate
+
+
+  printCollision :: GameState -> String
+  printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
+
   -- | Handle user input
   input :: Event -> GameState -> IO GameState
   input e gstate = return (inputKey e gstate)
