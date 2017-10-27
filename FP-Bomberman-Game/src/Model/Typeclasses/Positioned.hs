@@ -15,7 +15,7 @@ class Movable a where
 (+.) :: Pos -> Pos -> Pos
 (+.) (x,y) (x',y') = (x+x',y+y')
 
-(/.) :: Pos -> (Int,Int) -> Pos
-(/.) (x,y) (n,m) = (x `div` n,y `div` m)
+(*.) :: Pos -> (Int -> Int) -> Pos
+(*.) (x,y) f = (f x,f y)
 
 
