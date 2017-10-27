@@ -1,5 +1,4 @@
-module Model.Model where
-
+module Model.GameState where
 
     import System.Random
 
@@ -13,14 +12,11 @@ module Model.Model where
         gen      :: StdGen  
     }
 
-    initPlayer :: Player
-    initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
-
     initGame :: GameState
-    initGame = GameState initPlayer createGrid (mkStdGen 0
+    initGame = initGrid $ GameState initPlayer createGrid (mkStdGen 0)
 
     initGrid :: GameState -> GameState
-    initGrid gs = setBreakableBlocks gs (grid gs)
+    initGrid gs = gs { grid = setBreakableBlocks gs (grid gs) }
 
     genNumber :: GameState -> (Int , GameState)
     genNumber gs
@@ -31,21 +27,19 @@ module Model.Model where
     genNumberByRange gs
       = let (n, g') = randomR (0,100) (gen gs)
             in (n, gs { gen = g'})
-    
-    --hier een rng om random blokken in het veld te zetten?
-
-    setNewPlayer :: String -> Player
-    setNewPlayer name = Player name 100 (0,0) 1 "test"
-
-    
+    {-
+        Generates random blocks by RNG in Gamestate
+        Chance is now set at 60%, should be dynamic
+        Needs a limit of amount of blocks?
+    -}
     setBreakableBlocks :: GameState -> Grid -> Grid
-    setBreakableBlocks gs (x:[]) | fst rng > 40    = [x { gameObject = MetalBlock }]
+    setBreakableBlocks gs (x:[]) | fst rng > 40    = [x { gameObject = StoneBlock }]
                                  | otherwise       = [x]
                                  where rng = genNumberByRange gs
     setBreakableBlocks gs (x:xs) | fst rng > 40 && fieldIsEmpty x
-                                      = x { gameObject = MetalBlock } : setBreakableBlocks (snd rng) xs
-                                 | otherwise       = x : setBreakableBlocks (snd rng) xs
-                                 where rng = genNumberByrange gs
+                                              = x { gameObject = StoneBlock } : setBreakableBlocks (snd rng) xs
+                                 | otherwise  = x : setBreakableBlocks (snd rng) xs
+                                 where rng = genNumberByRange gs
 
     fieldIsEmpty :: Field -> Bool
     fieldIsEmpty f | gameObject f == Empty    = True

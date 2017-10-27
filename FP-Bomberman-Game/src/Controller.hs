@@ -2,7 +2,7 @@
 --   in response to time and user input
 module Controller where
   
-  import Model.Model
+  import Model.GameState
   import Model.Player
   import Model.Typeclasses.Positioned
   import Model.Grid
