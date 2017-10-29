@@ -5,7 +5,7 @@ import Typeclasses.Destructible
 
      data Bomb = Bomb {
             explosionRadius :: (Int, Int),
-            explodeTime :: Int,
+            explodeTime :: Float,
             bombPosition :: (Int,Int)
         }
 

@@ -16,31 +16,6 @@ viewPure gstate = pictures [
                                 drawGrid $ grid gstate,
                                 drawPlayer $ player gstate
                            ]
-
-grassColor :: Color
-grassColor = green
-
-stoneColor :: Color
-stoneColor = greyN 0.5
-
-drawStone :: Picture
-drawStone = color stoneColor $ rectangleSolid blockSize blockSize
-
-drawMetalBlock :: Picture
-drawMetalBlock = color black $ rectangleSolid blockSize blockSize
-
-drawGrass :: Picture
-drawGrass = color green $ rectangleSolid blockSize blockSize
-
-drawPowerUp :: Picture
-drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
-
-drawBomb :: Picture
-drawBomb = color red $ circleSolid 15
-
-drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid 40 blockSize
-
 {-case direction p of
                 North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
                 South -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
@@ -54,6 +29,7 @@ drawField f = case gameObject f of
                 MetalBlock -> drawMetalBlock
                 StoneBlock -> drawStone
                 Bomb       -> drawBomb
+                Explosion  -> drawExplosion
 {-
     Takes a grid and draws rectangles on the corresponding positions
     1. Get all the positions in pixels
@@ -74,8 +50,32 @@ setPosToPixels p = ((-375+xPos ),(375- yPos ))
 translate' :: Pos -> Picture -> Picture
 translate' p = translate (fromIntegral $ fst p) (fromIntegral $ snd p)
 
-windowSize :: Int
-windowSize = 800 
-
 blockSize :: Float
 blockSize = 50.0
+
+grassColor :: Color
+grassColor = green
+
+stoneColor :: Color
+stoneColor = dark orange
+
+drawStone :: Picture
+drawStone = color stoneColor $ rectangleSolid blockSize blockSize
+
+drawMetalBlock :: Picture
+drawMetalBlock = color (greyN 0.5) $ rectangleSolid blockSize blockSize
+
+drawGrass :: Picture
+drawGrass = color green $ rectangleSolid blockSize blockSize
+
+drawPowerUp :: Picture
+drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
+
+drawBomb :: Picture
+drawBomb = color red $ circleSolid 15
+
+drawPlayer :: Player -> Picture
+drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
+
+drawExplosion :: Picture
+drawExplosion = color (dark red) $ rectangleSolid blockSize blockSize

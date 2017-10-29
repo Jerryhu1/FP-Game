@@ -9,7 +9,9 @@ module Model.GameState where
     data GameState = GameState {
         player   :: Player,
         grid     :: Grid,
-        gen      :: StdGen  
+        gen      :: StdGen
+        -- explosions :: [Field]
+        -- enemies :: [Player]
     }
 
     initGame :: GameState
@@ -45,6 +47,9 @@ module Model.GameState where
     fieldIsEmpty f | gameObject f == Empty    = True
                    | otherwise                = False
 
+
+
+
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty = False
                                     | gameObject x == MetalBlock = checkField p x
@@ -60,18 +65,30 @@ module Model.GameState where
     testPlayer :: Player
     testPlayer = (Player "Jerry" 100 (-325,-275) 10 North "test")
 
-
-    -- Still WIP, what happens if the player is right in the center of a block?
     checkField :: Player -> Field -> Bool
-    checkField pl f = case direction pl of
-                      North -> True
+    checkField pl f = case playerDirection pl of
+                      North | (getY pl == getY f + 50 && (getX pl >= getX f && getX pl < getX f + 49)
+                              || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
                             | otherwise -> False
-                      East  | getX pl == ( (getX f) + 50)  -> True
+                      East  | (getX pl + 50) == getX f && (getY pl >= getY f - 49)
+                              && (getY pl - 50 <= getY f - 1 ) -> True
                             | otherwise -> False
-                      South | getY pl == getY f -> True
+                      South |  (getY pl - 50 == getY f && (getX pl >= getX f && getX pl < getX f + 49)
+                                 || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
                             | otherwise -> False
-                      West  | getX pl == getX f -> True
+                      West  |(getX pl) == getX f + 50 && (getY pl >= getY f - 49)
+                               && (getY pl - 50 <= getY f - 1 ) -> True
                             | otherwise -> False
 
-        {-(getY pl == getY f + 50 && (getX pl >= getX f && getX pl <= getX f + 50)
-                                        || (getX pl + 50 >= getX f && getX pl + 50 <= getX f + 50)) -> True-}
+    breakBlocks :: [Field] -> Grid -> Grid
+    breakBlocks (x:[]) gr = setExplosion x gr
+    breakBlocks (x:xs) gr = breakBlocks xs newGrid
+                    where newGrid = setExplosion x gr
+
+    setExplosion ::  Grid -> [Field] -> Grid
+    setExplosion (x:[]) (y:[]) | gameObject x == MetalBlock         = [y]
+                               | getPos x == getPos f  = [x { gameObject = Explosion }]
+                               | otherwise                         = [y]
+    setExplosion (x:xs) (y:ys) | gameObject x == MetalBlock         = x : setExplosion  xs
+                               | getPos x == getPos f  = [x { gameObject = Explosion }]
+                               | otherwise                         = x : setExplosion f xs

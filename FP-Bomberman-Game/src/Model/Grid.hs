@@ -23,6 +23,8 @@ module Model.Grid where
     gridSizeX = (numGridX-1) * fieldSize
     gridSizeY = (numGridX-3) * fieldSize
 
+
+
     --mogelijk ook toevoegen:
    -- numGridY::Int
    -- numGridY = 13
@@ -31,7 +33,7 @@ module Model.Grid where
 
     data Block  = Block {}
 
-    data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Empty
+    data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Explosion | Empty
          deriving(Show, Ord, Eq)
     -- Misschien PowerUp onderdeel maken van Metalblock?
 

@@ -1,0 +1,18 @@
+TO-DO
+
+- Bomb explosions
+- Breaking blocks by explosion
+- Game over by death by explosion, or enemy
+- Victory by killing all enemies
+- Random seed generation
+- Initial blocks should not block enemies or players
+- High scores
+- Enemies AI
+- Animations
+- Pause screen
+
+Extra's
+
+- Power ups
+- Levels
+- Sprites
