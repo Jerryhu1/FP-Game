@@ -1,6 +1,7 @@
 module Model.Grid where
 
     import Model.Typeclasses.Positioned
+    import Model.Typeclasses.HasArea 
     import System.Random
 
     data Field = Field {
@@ -24,11 +25,6 @@ module Model.Grid where
     gridSizeY = (numGridX-3) * fieldSize
 
 
-
-    --mogelijk ook toevoegen:
-   -- numGridY::Int
-   -- numGridY = 13
-
     type Grid = [Field]
 
     data Block  = Block {}
@@ -40,7 +36,13 @@ module Model.Grid where
     instance Positioned Field where
          getPos f = fieldPosition f
          getX f = fst $ getPos f
-         getY f = snd $ getPos f
+         getY f = snd $ getPos f    
+
+    instance HasArea Field where
+        inArea f (x,y) = let (x1,y1) = (getX f, getY f )
+                             (x2,y2) = (+.) (x1,y1) (49, -49)
+                         in x1 <= x && x <= x2 && y2 <= y && y <= y1
+     
 
     {-
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x

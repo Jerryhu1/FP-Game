@@ -1,25 +1,31 @@
 module Model.GameState where
 
     import System.Random
+    import Graphics.Gloss.Interface.Pure.Game
 
     import Model.Player
     import Model.Grid
     import Model.Typeclasses.Positioned
-
+    import Model.Typeclasses.HasArea
+    import Debug.Trace
+    
     data GameState = GameState {
         player       :: Player,
         grid         :: Grid,
         currentState :: CurrentState,
-        gen          :: StdGen
+        gen          :: StdGen,
+        keyState     :: KeyState
         -- explosions :: [Field]
         -- enemies :: [Player]
     }
 
     data CurrentState = Loading | Running | Paused | GameOver
-            deriving(Show, Eq)
+            deriving(Show, Eq)    
 
+    
+    
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0)
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up
 
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))
@@ -42,27 +48,51 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 40      -> f { gameObject = StoneBlock}
+                                Empty | rng > 90      -> f { gameObject = StoneBlock}
                                       | otherwise     -> f
                                 _                     -> f )
    
-
-    checkIfPlayerCollision :: Player -> Grid -> Bool
-    checkIfPlayerCollision p (x:[]) | gameObject x == Empty = False
-                                    | gameObject x == PowerUp = False -- Should still check for collision and pick up item
-                                    | otherwise = checkField p x
-    checkIfPlayerCollision p (x:xs) | obj == Empty = checkIfPlayerCollision p xs
-                                    | otherwise    = if (checkField p x == True) then True else checkIfPlayerCollision p xs
-                            where obj = gameObject x
 
     testField :: Field
     testField = Field (-325, -325) MetalBlock
 
     testPlayer :: Player
-    testPlayer = (Player "Jerry" 100 (-325,-275) 10 North "test")
+    testPlayer = (Player "Jerry" 100 (-325,-275) 10 North "test")                                
+
+    checkIfPlayerCollision :: Player -> Grid -> Bool
+    checkIfPlayerCollision _ []     = False
+    checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
+                                     | otherwise                 = checkIfPlayerCollision p xs
+
+
+{-}
+    checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
+                                    | gameObject x == PowerUp   = False -- Should still check for collision and pick up item
+                                    | otherwise                 = checkField p x
+    checkIfPlayerCollision p (x:xs) | gameObject x == Empty     = checkIfPlayerCollision p xs
+                                    | otherwise                 = if (checkField p x == True) then True else checkIfPlayerCollision p xs
+-}
+
 
     checkField :: Player -> Field -> Bool
-    checkField pl f = case playerDirection pl of
+    checkField pl f =   let (x,y) = getPos pl in
+                        case playerDirection pl of
+                    North   | inArea f (x,y+1) 
+                                || inArea f (x+49,y+1) -> True
+                            | otherwise                         -> False
+                    East    | inArea f (x+50,y)
+                                || inArea f (x+50,y-49) -> True
+                            | otherwise                         -> False
+                    South   | inArea f (x,y-50)
+                                || inArea f (x+49,y-50) -> True
+                            | otherwise                         -> False
+                    West    | inArea f (x-1,y)
+                                || inArea f (x-1,y-49) -> True
+                            | otherwise                         -> False
+
+                            {-
+    checkField :: Player -> Field -> Bool
+    checkField pl f = case playerDirection pl of                     
                       North | (getY pl == getY f + 50 && (getX pl >= getX f && getX pl < getX f + 49)
                               || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
                             | otherwise -> False
@@ -76,7 +106,7 @@ module Model.GameState where
                                && (getY pl - 50 <= getY f - 1 ) -> True
                             | otherwise -> False
 
-                            {-
+                            
     breakBlocks :: [Field] -> Grid -> Grid
     breakBlocks (x:[]) gr = setExplosion x gr
     breakBlocks (x:xs) gr = breakBlocks xs newGrid

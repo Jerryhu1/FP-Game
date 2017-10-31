@@ -28,9 +28,7 @@ instance Show Player where
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 10 West "test"
     
---change the direction in which the player is positioned
-changePlayerDir :: Direction -> Player -> Player
-changePlayerDir dir player' = setDir dir player'    
+    
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player

@@ -15,9 +15,11 @@ module Controller where
   step :: Float -> GameState -> IO GameState
   step secs gstate =
         do 
-           let gs = if currentState gstate == Loading then setBreakableBlocks gstate else return gstate
+           let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
+                  | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
+                  | otherwise                       = return gstate
            g <- gs
-           putStrLn $ (printCollision gstate ++ show (player gstate))
+           putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
            return g
 
   printCollision :: GameState -> String
@@ -30,25 +32,31 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
-    | c== SpecialKey KeyLeft   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
-    | c== SpecialKey KeyDown   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
-    | c== SpecialKey KeyRight  = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
+    | c== SpecialKey KeyUp     = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
+    | c== SpecialKey KeyLeft   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
+    | c== SpecialKey KeyDown   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
+    | c== SpecialKey KeyRight  = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
     | c== Char ','             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
     | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = PowerUp}
+  inputKey (EventKey c Up _ _) gstate = setKeyState Up gstate  
   inputKey _ gstate = gstate 
   
+  --change the direction in which the player is positioned
+  changePlayerDir :: Direction -> Player -> Player
+  changePlayerDir dir player' = setDir dir player'
+
   checkifMovePlayer :: GameState -> Player -> Player
   checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
                           | otherwise                           = movePlayerInDir p                      
 
-  
   
   addGameObject :: Field -> Grid -> Grid
   addGameObject newField [] = []
   addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
                                 | otherwise                                   = x : addGameObject newField xs
   
+  setKeyState :: KeyState -> GameState -> GameState
+  setKeyState k gstate = gstate { keyState = k}
   
   modGrid :: GameState -> (Grid -> Grid) -> GameState
   modGrid gstate f = gstate { grid = f $ grid gstate}
