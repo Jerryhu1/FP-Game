@@ -30,25 +30,19 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = modPlayer gstate $ movePlayer (0,1) . changePlayerDir North
-    | c== SpecialKey KeyLeft   = modPlayer gstate $ movePlayer (-1,0) . changePlayerDir West
-    | c== SpecialKey KeyDown   = modPlayer gstate $ movePlayer (0,-1)  . changePlayerDir South
-    | c== SpecialKey KeyRight  = modPlayer gstate $ movePlayer (1,0)  . changePlayerDir East
+    | c== SpecialKey KeyUp     = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
+    | c== SpecialKey KeyLeft   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
+    | c== SpecialKey KeyDown   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
+    | c== SpecialKey KeyRight  = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
     | c== Char ','             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
     | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = PowerUp}
   inputKey _ gstate = gstate 
   
-  movePlayer :: Pos -> Player -> Player
-  movePlayer pos player' = setPos (addVel delta $ getPos player') player'
-    where delta = (*.) pos (* (velocity player'))
-  
-  changePlayerDir :: Direction -> Player -> Player
-  changePlayerDir dir player' = setDir dir player'
+  checkifMovePlayer :: GameState -> Player -> Player
+  checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
+                          | otherwise                           = movePlayerInDir p                      
 
-  addVel :: Pos -> Pos -> Pos
-  addVel (x,y) (x',y') = (newX, newY)
-    where newX = max (-375) $ min 375 $ x+x'
-          newY = max (-375) $ min 375 $ y+y'
+  
   
   addGameObject :: Field -> Grid -> Grid
   addGameObject newField [] = []

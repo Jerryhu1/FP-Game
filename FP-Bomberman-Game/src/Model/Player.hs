@@ -27,7 +27,29 @@ instance Show Player where
 
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 10 West "test"
+    
+--change the direction in which the player is positioned
+changePlayerDir :: Direction -> Player -> Player
+changePlayerDir dir player' = setDir dir player'    
 
+--if no collision occures, move player in the direction he is facing
+movePlayerInDir :: Player -> Player
+movePlayerInDir player' = case playerDirection player' of
+                                West -> setPos (calcNewPos (-1,0) player') player'
+                                East -> setPos (calcNewPos (1,0) player') player'
+                                North -> setPos (calcNewPos (0,1) player') player'
+                                South -> setPos (calcNewPos (0,-1) player') player'
+--move player given a new 
+calcNewPos :: Pos -> Player -> Pos
+calcNewPos pos player' = getBound posTimesVel $ getPos player'
+    where posTimesVel = (*.) pos (* (velocity player'))
+
+
+getBound :: Pos -> Pos -> Pos
+getBound (x,y) (x',y') = (newX, newY)
+    where newX = max (-375) $ min 375 $ x+x'
+          newY = max (-375) $ min 375 $ y+y'
+    
 getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
