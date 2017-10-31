@@ -23,6 +23,9 @@ instance Movable Player where
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
 
+
+
+    
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
 

@@ -31,11 +31,12 @@ module Controller where
     | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $player gstate, gameObject = PowerUp}  
   inputKey _ gstate = gstate 
   
+  --move player by adding a position to the current position
   movePlayer :: Pos -> Player -> Player
   movePlayer pos player' = setPos (addVel delta $ getPos player') player'
-    where delta = (*.) pos (* (velocity player'))
-  
-
+     where delta = (*.) pos (* (velocity player'))
+                
+--calculate new position and make sure the position stays in the grid
   addVel :: Pos -> Pos -> Pos
   addVel (x,y) (x',y') = (newX, newY)
     where newX = max (-375) $ min 375 $ x+x'
