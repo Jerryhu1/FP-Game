@@ -75,8 +75,6 @@ module Model.GameState where
                       West  |(getX pl) == getX f + 50 && (getY pl >= getY f - 49)
                                && (getY pl - 50 <= getY f - 1 ) -> True
                             | otherwise -> False
-<<<<<<< HEAD
-=======
 
                             {-
     breakBlocks :: [Field] -> Grid -> Grid
@@ -92,4 +90,3 @@ module Model.GameState where
                                | getPos x == getPos f  = [x { gameObject = Explosion }]
                                | otherwise                         = x : setExplosion f xs
                                -}
->>>>>>> 1d9c8c5839261c6e22662afeb14d8dd3fa0bd1f2
