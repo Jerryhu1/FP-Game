@@ -8,6 +8,7 @@ data Player = Player {
         health :: Int,
         playerPosition :: Pos,
         velocity :: Vel,
+        playerDirection :: Direction,
         --moveSpeed :: Double,
         sprite :: String
         }
@@ -19,12 +20,13 @@ instance Positioned Player where
 
 instance Movable Player where
     setPos pos player = player { playerPosition = pos }
+    setDir dir player = player { playerDirection = dir}
 
 instance Show Player where
-    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p)
+    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p)
 
 initPlayer :: Player
-initPlayer = Player "Jerry" 100 (-375,375) 10 "test"
+initPlayer = Player "Jerry" 100 (-375,375) 10 West "test"
 
 getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
