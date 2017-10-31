@@ -14,9 +14,11 @@ module Controller where
   -- | Handle one iteration of the game
   step :: Float -> GameState -> IO GameState
   step secs gstate =
-        do putStrLn $ (printCollision gstate ++ show (player gstate))
-           return gstate
-
+        do 
+           let gs = if currentState gstate == Loading then setBreakableBlocks gstate else return gstate
+           g <- gs
+           putStrLn $ (printCollision gstate ++ show (player gstate))
+           return g
 
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)

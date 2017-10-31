@@ -7,56 +7,52 @@ module Model.GameState where
     import Model.Typeclasses.Positioned
 
     data GameState = GameState {
-        player   :: Player,
-        grid     :: Grid,
-        gen      :: StdGen
+        player       :: Player,
+        grid         :: Grid,
+        currentState :: CurrentState,
+        gen          :: StdGen
         -- explosions :: [Field]
         -- enemies :: [Player]
     }
 
+    data CurrentState = Loading | Running | Paused | GameOver
+            deriving(Show, Eq)
+
     initGame :: GameState
-    initGame = initGrid $ GameState initPlayer createGrid (mkStdGen 0)
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0)
 
-    initGrid :: GameState -> GameState
-    initGrid gs = gs { grid = setBreakableBlocks gs (grid gs) }
-
-    genNumber :: GameState -> (Int , GameState)
-    genNumber gs
-      = let (n , g') = next (gen gs)
-         in (n , gs { gen = g' })
-
-    genNumberByRange :: GameState -> (Int, GameState)
-    genNumberByRange gs
-      = let (n, g') = randomR (0,100) (gen gs)
-            in (n, gs { gen = g'})
+    getRNumber :: IO Int
+    getRNumber = getStdRandom (randomR(1,100))
+     
     {-
         Generates random blocks by RNG in Gamestate
         Chance is now set at 60%, should be dynamic
         Needs a limit of amount of blocks?
     -}
-    setBreakableBlocks :: GameState -> Grid -> Grid
-    setBreakableBlocks gs (x:[]) | fst rng > 40    = [x { gameObject = StoneBlock }]
-                                 | otherwise       = [x]
-                                 where rng = genNumberByRange gs
-    setBreakableBlocks gs (x:xs) | fst rng > 40 && fieldIsEmpty x
-                                              = x { gameObject = StoneBlock } : setBreakableBlocks (snd rng) xs
-                                 | otherwise  = x : setBreakableBlocks (snd rng) xs
-                                 where rng = genNumberByRange gs
-
-    fieldIsEmpty :: Field -> Bool
-    fieldIsEmpty f | gameObject f == Empty    = True
-                   | otherwise                = False
-
-
-
+    setBreakableBlocks :: GameState -> IO GameState
+    setBreakableBlocks gs = 
+            do 
+                g <- return $ grid gs
+                newGrid <- mapM setBreakableBlock g
+                putStrLn(show newGrid)
+                return gs { grid = newGrid, currentState = Running}
+    
+    setBreakableBlock :: Field -> IO Field
+    setBreakableBlock f = do
+                            rng <- getRNumber
+                            let obj = gameObject f
+                            return (case obj of 
+                                Empty | rng > 40      -> f { gameObject = StoneBlock}
+                                      | otherwise     -> f
+                                _                     -> f )
+   
 
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty = False
-                                    | gameObject x == MetalBlock = checkField p x
-                                    | otherwise = False
+                                    | gameObject x == PowerUp = False -- Should still check for collision and pick up item
+                                    | otherwise = checkField p x
     checkIfPlayerCollision p (x:xs) | obj == Empty = checkIfPlayerCollision p xs
-                                    | gameObject x == MetalBlock   = if (checkField p x == True) then True else checkIfPlayerCollision p xs
-                                    | otherwise = checkIfPlayerCollision p xs
+                                    | otherwise    = if (checkField p x == True) then True else checkIfPlayerCollision p xs
                             where obj = gameObject x
 
     testField :: Field
@@ -79,16 +75,3 @@ module Model.GameState where
                       West  |(getX pl) == getX f + 50 && (getY pl >= getY f - 49)
                                && (getY pl - 50 <= getY f - 1 ) -> True
                             | otherwise -> False
-
-    breakBlocks :: [Field] -> Grid -> Grid
-    breakBlocks (x:[]) gr = setExplosion x gr
-    breakBlocks (x:xs) gr = breakBlocks xs newGrid
-                    where newGrid = setExplosion x gr
-
-    setExplosion ::  Grid -> [Field] -> Grid
-    setExplosion (x:[]) (y:[]) | gameObject x == MetalBlock         = [y]
-                               | getPos x == getPos f  = [x { gameObject = Explosion }]
-                               | otherwise                         = [y]
-    setExplosion (x:xs) (y:ys) | gameObject x == MetalBlock         = x : setExplosion  xs
-                               | getPos x == getPos f  = [x { gameObject = Explosion }]
-                               | otherwise                         = x : setExplosion f xs
