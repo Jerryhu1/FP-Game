@@ -16,11 +16,17 @@ module Controller where
   step secs gstate =
         do 
            let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
+                  | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
+                  | currentStsate gstate == GameOver = undefined -- Show gameover screen
                   | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
                   | otherwise                       = return gstate
+
            g <- gs
            putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
            return g
+
+  moveEnemyRandomly :: Player -> Player
+  moveEnemyRandomly p = undefined  
 
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)

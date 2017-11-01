@@ -14,7 +14,8 @@ view = return . viewPure
 viewPure :: GameState -> Picture
 viewPure gstate = pictures [ 
                                 drawGrid $ grid gstate,
-                                drawPlayer $ player gstate
+                                drawPlayer $ player gstate,
+                                pictures $ map drawEnemy (enemies gstate)
                            ]
 {-case direction p of
                 North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
@@ -76,6 +77,9 @@ drawBomb = color red $ circleSolid 15
 
 drawPlayer :: Player -> Picture
 drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
+
+drawEnemy :: Player -> Picture
+drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize
 
 drawExplosion :: Picture
 drawExplosion = color (dark red) $ rectangleSolid blockSize blockSize

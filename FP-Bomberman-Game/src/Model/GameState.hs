@@ -14,7 +14,8 @@ module Model.GameState where
         grid         :: Grid,
         currentState :: CurrentState,
         gen          :: StdGen,
-        keyState     :: KeyState
+        keyState     :: KeyState,
+        enemies      :: [Player]
         -- explosions :: [Field]
         -- enemies :: [Player]
     }
@@ -25,7 +26,10 @@ module Model.GameState where
     
     
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies
+
+    initEnemies :: [Player]
+    initEnemies = [Player "Monstertje" 100 (325,375) 5 East "test", Player "Monstertje2" 100 (325,-225) 5 East "test"  ]
 
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))
@@ -48,10 +52,16 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 90      -> f { gameObject = StoneBlock}
-                                      | otherwise     -> f
-                                _                     -> f )
+                                Empty | rng > 40 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
+                                      | otherwise                      -> f
+                                _                                      -> f )
    
+    isSafeZone :: Field -> Bool
+    isSafeZone f | pos == (-375, 375) || pos == (-325, 375) || pos == (-375, 325) = True
+                 | otherwise = False
+
+                where pos = fieldPosition f
+
 
     testField :: Field
     testField = Field (-325, -325) MetalBlock

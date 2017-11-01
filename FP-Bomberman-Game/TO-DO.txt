@@ -4,7 +4,6 @@ TO-DO
 - Breaking blocks by explosion
 - Game over by death by explosion, or enemy
 - Victory by killing all enemies
-- Random seed generation
 - Initial blocks should not block enemies or players
 - High scores
 - Enemies AI
@@ -16,3 +15,7 @@ Extra's
 - Power ups
 - Levels
 - Sprites
+
+Done:
+
+- Random seed generation 
