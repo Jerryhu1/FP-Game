@@ -5,6 +5,7 @@ module Model.GameState where
 
     import Model.Player
     import Model.Grid
+    import Model.GameObject
     import Model.Typeclasses.Positioned
     import Model.Typeclasses.HasArea
     import Debug.Trace
@@ -41,7 +42,6 @@ module Model.GameState where
             do 
                 g <- return $ grid gs
                 newGrid <- mapM setBreakableBlock g
-                putStrLn(show newGrid)
                 return gs { grid = newGrid, currentState = Running}
     
     setBreakableBlock :: Field -> IO Field
@@ -49,22 +49,21 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 40 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
+                                Empty | rng > 100 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
                                       | otherwise                      -> f
                                 _                                      -> f )
    
     isSafeZone :: Field -> Bool
     isSafeZone f | pos == (-375, 375) || pos == (-325, 375) || pos == (-375, 325) = True
                  | otherwise = False
-
                 where pos = fieldPosition f                          
 
+ 
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision _ []     = False
     checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                     | otherwise                 = checkIfPlayerCollision p xs
-
-
+                                        | otherwise                 = checkIfPlayerCollision p xs
+                            
 {-}
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
                                     | gameObject x == PowerUp   = False -- Should still check for collision and pick up item

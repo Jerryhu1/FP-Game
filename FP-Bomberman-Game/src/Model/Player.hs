@@ -14,6 +14,8 @@ data Player = Player {
         goal :: Pos
         }deriving(Eq)
 
+            
+
 instance Positioned Player where
     getPos p = playerPosition p
     getX p = fst $ getPos p
@@ -24,13 +26,13 @@ instance Movable Player where
     setDir dir player = player { playerDirection = dir}
 
 instance Show Player where
-    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p)
+    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p) ++ "Goal: " ++ show (goal p)
 
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
     
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" 100 (325,375) 5 East "test" (325, 375), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -375)]
+initEnemies = [Player "Monstertje" 100 (225,125) 5 East "test" (175, 125), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -375)]
 
 
 --if no collision occures, move player in the direction he is facing

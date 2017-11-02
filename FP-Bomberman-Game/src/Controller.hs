@@ -8,9 +8,12 @@ module Controller where
   import Model.Grid
   import Model.EnemyLogic
   import Model.Random
+  import Model.GameObject
+
   
   import Graphics.Gloss
   import Graphics.Gloss.Interface.IO.Game
+  import System.Random
   
   -- | Handle one iteration of the game
   step :: Float -> GameState -> IO GameState
@@ -20,10 +23,10 @@ module Controller where
                   | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
                   | currentState gstate == GameOver = undefined -- Show gameover screen
                   | otherwise                       = return $ gstate          
-          putStrLn ( show $getPath pureGs enemyToMove)
-          putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
-          
-          return $ moveEnemy pureGs (head $ enemies pureGs)
+           pureGs <- gs
+           let gsNew = snd $ withRandom (randomR (0,3)) pureGs
+           putStrLn( show $ head $ enemies gsNew)
+           return $ moveEnemy gsNew (head $ enemies gsNew)
 
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
@@ -39,16 +42,10 @@ module Controller where
     | c== SpecialKey KeyLeft   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
     | c== SpecialKey KeyDown   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
     | c== SpecialKey KeyRight  = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
-    | c== Char ','             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
-    | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = PowerUp}
+    | c== Char ','             = setKeyState Down . modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
   inputKey (EventKey c Up _ _) gstate = setKeyState Up gstate  
   inputKey _ gstate = gstate 
 
-  addGameObject :: Field -> Grid -> Grid
-  addGameObject newField [] = []
-  addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
-                                | otherwise                                   = x : addGameObject newField xs
-  
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
   

@@ -2,6 +2,7 @@ module Model.Grid where
 
     import Model.Typeclasses.Positioned
     import Model.Typeclasses.HasArea 
+    import Model.GameObject
     import System.Random
 
     data Field = Field {
@@ -21,17 +22,11 @@ module Model.Grid where
     fieldSize :: Int
     fieldSize = 50
 
-    gridSizeX = (numGridX-1) * fieldSize
-    gridSizeY = (numGridX-3) * fieldSize
-
 
     type Grid = [Field]
 
-    data Block  = Block {}
 
-    data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Explosion | Empty
-         deriving(Show, Ord, Eq)
-    -- Misschien PowerUp onderdeel maken van Metalblock?
+
 
     instance Positioned Field where
          getPos f = fieldPosition f
@@ -42,8 +37,8 @@ module Model.Grid where
         inArea f (x,y) = let (x1,y1) = (getX f, getY f )
                              (x2,y2) = (+.) (x1,y1) (49, -49)
                          in x1 <= x && x <= x2 && y2 <= y && y <= y1
-     
-
+    
+                         
     {-
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x
     TO-DO: Integrate setBlocks with createGrid
@@ -60,8 +55,11 @@ module Model.Grid where
     -}
     setBlocks :: Grid -> Grid
     setBlocks []     = []
-    setBlocks (x:[]) | odd (getX x) && odd (getY x)  = [Field (getPos x) MetalBlock]
-                     | otherwise = [x]
     setBlocks (x:xs) | odd (getX x) && odd (getY x)  = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
 
+    addGameObject :: Field -> Grid -> Grid
+    addGameObject newField [] = []
+    addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
+                                  | otherwise                                   = x : addGameObject newField xs
+                    

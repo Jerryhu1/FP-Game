@@ -9,12 +9,17 @@ import System.Random
 
 
 moveEnemy :: GameState -> Player -> GameState
-moveEnemy gs enemy | (goal enemy) /= (getPos enemy) = moveEnemyToPos gs enemy $ goal enemy    
-                   | otherwise                       = moveEnemyToPos gs enemy $ getPath gs enemy
-        
+moveEnemy gs enemy | (goal enemy) /= (getPos enemy) && not (checkIfPlayerCollision enemy (grid gs) ) = moveEnemyToPos gs enemy $ goal enemy    
+                   | otherwise                      = modEnemy gs enemy (setNewGoal gs)
+                                                     
+setNewGoal :: GameState -> Player -> Player
+setNewGoal gs e = e { goal = newGoal, playerDirection = getDirectionFromPos e newGoal  }
+                  where newGoal = getPath gs e
+
+
 moveEnemyToPos :: GameState -> Player -> Pos -> GameState
-moveEnemyToPos gs p pos | getPos p == pos     = gs
-                        | otherwise           = modEnemy gs p $ checkifMovePlayer gs . changePlayerDir (getDirectionFromPos p pos)
+moveEnemyToPos gs enemy pos = modEnemy gs enemy $ checkifMovePlayer gs . changePlayerDir (getDirectionFromPos enemy pos)
+                        
 
 modEnemy :: GameState -> Player -> (Player -> Player) -> GameState
 modEnemy gstate enemy f = gstate { enemies = acc enemy f (enemies gstate) }
@@ -36,7 +41,7 @@ getPath gs p | rng == 0  = (getX p + 50, getY p)
                     
 getDirectionFromPos :: Player -> Pos -> Direction
 getDirectionFromPos p pos | getX p > fst pos = East
-                        | getX p < fst pos = West
-                        | getY p < snd pos = North
-                        | getY p > snd pos = South
-                        | otherwise        = playerDirection p
+                          | getX p < fst pos = West
+                          | getY p < snd pos = North
+                          | getY p > snd pos = South
+                          | otherwise        = playerDirection p
