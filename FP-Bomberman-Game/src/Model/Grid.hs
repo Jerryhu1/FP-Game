@@ -2,6 +2,7 @@ module Model.Grid where
 
     import Model.Typeclasses.Positioned
     import Model.Typeclasses.HasArea 
+    import Model.GameObject
     import System.Random
 
     data Field = Field {
@@ -27,11 +28,7 @@ module Model.Grid where
 
     type Grid = [Field]
 
-    data Block  = Block {}
 
-    data GameObject = PowerUp | MetalBlock | StoneBlock | Bomb | Explosion | Empty
-         deriving(Show, Ord, Eq)
-    -- Misschien PowerUp onderdeel maken van Metalblock?
 
     instance Positioned Field where
          getPos f = fieldPosition f

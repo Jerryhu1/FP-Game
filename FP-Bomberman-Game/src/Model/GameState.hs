@@ -5,6 +5,7 @@ module Model.GameState where
 
     import Model.Player
     import Model.Grid
+    import Model.GameObject
     import Model.Typeclasses.Positioned
     import Model.Typeclasses.HasArea
     import Debug.Trace
@@ -17,7 +18,7 @@ module Model.GameState where
         keyState     :: KeyState
         -- explosions :: [Field]
         -- enemies :: [Player]
-    }
+        }
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
@@ -25,7 +26,7 @@ module Model.GameState where
     
     
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up 
 
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))
@@ -62,18 +63,11 @@ module Model.GameState where
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision _ []     = False
     checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
+                                  --   | gameObject x == Bomb      = moveBomb p (x:xs)
                                      | otherwise                 = checkIfPlayerCollision p xs
 
 
-{-}
-    checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
-                                    | gameObject x == PowerUp   = False -- Should still check for collision and pick up item
-                                    | otherwise                 = checkField p x
-    checkIfPlayerCollision p (x:xs) | gameObject x == Empty     = checkIfPlayerCollision p xs
-                                    | otherwise                 = if (checkField p x == True) then True else checkIfPlayerCollision p xs
--}
-
-
+                                    
     checkField :: Player -> Field -> Bool
     checkField pl f =   let (x,y) = getPos pl in
                         case playerDirection pl of
@@ -90,23 +84,9 @@ module Model.GameState where
                                 || inArea f (x-1,y-49) -> True
                             | otherwise                         -> False
 
-                            {-
-    checkField :: Player -> Field -> Bool
-    checkField pl f = case playerDirection pl of                     
-                      North | (getY pl == getY f + 50 && (getX pl >= getX f && getX pl < getX f + 49)
-                              || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
-                            | otherwise -> False
-                      East  | (getX pl + 50) == getX f && (getY pl >= getY f - 49)
-                              && (getY pl - 50 <= getY f - 1 ) -> True
-                            | otherwise -> False
-                      South |  (getY pl - 50 == getY f && (getX pl >= getX f && getX pl < getX f + 49)
-                                 || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
-                            | otherwise -> False
-                      West  |(getX pl) == getX f + 50 && (getY pl >= getY f - 49)
-                               && (getY pl - 50 <= getY f - 1 ) -> True
-                            | otherwise -> False
 
-                            
+
+      {-                      
     breakBlocks :: [Field] -> Grid -> Grid
     breakBlocks (x:[]) gr = setExplosion x gr
     breakBlocks (x:xs) gr = breakBlocks xs newGrid

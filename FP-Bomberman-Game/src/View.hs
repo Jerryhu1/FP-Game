@@ -5,6 +5,7 @@ module View where
 import Graphics.Gloss
 import Model.GameState
 import Model.Grid
+import Model.GameObject
 import Model.Typeclasses.Positioned
 import Model.Player
 
@@ -28,7 +29,7 @@ drawField f = case gameObject f of
                 Empty -> drawGrass
                 MetalBlock -> drawMetalBlock
                 StoneBlock -> drawStone
-                Bomb       -> drawBomb
+                Bomb _ _ _ -> drawBomb
                 Explosion  -> drawExplosion
 {-
     Takes a grid and draws rectangles on the corresponding positions
@@ -50,32 +51,8 @@ setPosToPixels p = ((-375+xPos ),(375- yPos ))
 translate' :: Pos -> Picture -> Picture
 translate' p = translate (fromIntegral $ fst p) (fromIntegral $ snd p)
 
-blockSize :: Float
-blockSize = 50.0
 
-grassColor :: Color
-grassColor = green
 
-stoneColor :: Color
-stoneColor = dark orange
 
-drawStone :: Picture
-drawStone = color stoneColor $ rectangleSolid blockSize blockSize
 
-drawMetalBlock :: Picture
-drawMetalBlock = color (greyN 0.5) $ rectangleSolid blockSize blockSize
 
-drawGrass :: Picture
-drawGrass = color green $ rectangleSolid blockSize blockSize
-
-drawPowerUp :: Picture
-drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
-
-drawBomb :: Picture
-drawBomb = color red $ circleSolid 15
-
-drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
-
-drawExplosion :: Picture
-drawExplosion = color (dark red) $ rectangleSolid blockSize blockSize

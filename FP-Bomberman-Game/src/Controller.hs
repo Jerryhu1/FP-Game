@@ -17,11 +17,16 @@ module Controller where
         do 
            let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
                   | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
-                  | otherwise                       = return gstate
+                  | otherwise                       = return modGrid gstate 
            g <- gs
            putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
-           return g
-
+           return $ gstate { elapsedTime = elapsedTime gstate + secs }
+  
+  updateBombs :: Grid -> Grid
+  updateBombs [] = []
+  updateBombs (x:xs)  | gameObject x == Bomb    = setTimer x : updateBombs xs
+                      | otherwise               = updateBombs xs
+                      
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
 
@@ -55,6 +60,8 @@ module Controller where
   addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
                                 | otherwise                                   = x : addGameObject newField xs
   
+
+                          
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
   
@@ -63,6 +70,7 @@ module Controller where
   
   modPlayer :: GameState -> (Player -> Player) -> GameState
   modPlayer gstate f = gstate { player = f $ player gstate}
+
                             
   
   
