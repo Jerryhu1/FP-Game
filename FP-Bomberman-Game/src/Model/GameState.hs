@@ -49,7 +49,7 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 60 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
+                                Empty | rng > 40 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
                                       | otherwise                      -> f
                                 _                                      -> f )
    
@@ -57,14 +57,7 @@ module Model.GameState where
     isSafeZone f | pos == (-375, 375) || pos == (-325, 375) || pos == (-375, 325) = True
                  | otherwise = False
 
-                where pos = fieldPosition f
-
-
-    testField :: Field
-    testField = Field (-325, -325) MetalBlock
-
-    testPlayer :: Player
-    testPlayer = (Player "Jerry" 100 (-325,-275) 10 North "test")                                
+                where pos = fieldPosition f                          
 
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision _ []     = False
@@ -72,7 +65,7 @@ module Model.GameState where
                                      | otherwise                 = checkIfPlayerCollision p xs
 
 
-{-
+{-}
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
                                     | gameObject x == PowerUp   = False -- Should still check for collision and pick up item
                                     | otherwise                 = checkField p x
@@ -97,6 +90,13 @@ module Model.GameState where
                                 || inArea f (x-1,y-49) -> True
                             | otherwise                         -> False
 
+    modPlayer :: GameState -> (Player -> Player) -> GameState
+    modPlayer gstate f = gstate { player = f $ player gstate}
+
+    
+    checkifMovePlayer :: GameState -> Player -> Player
+    checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
+                            | otherwise                           = movePlayerInDir p           
                             {-
     checkField :: Player -> Field -> Bool
     checkField pl f = case playerDirection pl of                     
