@@ -28,9 +28,6 @@ module Model.GameState where
     initGame :: GameState
     initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies
 
-    initEnemies :: [Player]
-    initEnemies = [Player "Monstertje" 100 (325,375) 5 East "test", Player "Monstertje2" 100 (325,-225) 5 East "test"  ]
-
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))
      
@@ -52,7 +49,7 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 40 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
+                                Empty | rng > 60 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
                                       | otherwise                      -> f
                                 _                                      -> f )
    
@@ -75,7 +72,7 @@ module Model.GameState where
                                      | otherwise                 = checkIfPlayerCollision p xs
 
 
-{-}
+{-
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
                                     | gameObject x == PowerUp   = False -- Should still check for collision and pick up item
                                     | otherwise                 = checkField p x

@@ -2,7 +2,7 @@ module Model.Typeclasses.Positioned where
 
 type Pos = (Int , Int)
 type Vel = Int
-data Direction = North | South | East | West deriving(Show)
+data Direction = North | South | East | West deriving(Show, Eq)
 
 class Positioned a where
     getPos :: a -> Pos

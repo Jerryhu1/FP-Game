@@ -11,7 +11,7 @@ data Player = Player {
         playerDirection :: Direction,
         --moveSpeed :: Double,
         sprite :: String
-        }
+        }deriving(Eq)
 
 instance Positioned Player where
     getPos p = playerPosition p
@@ -28,7 +28,9 @@ instance Show Player where
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 5 West "test"
     
-    
+initEnemies :: [Player]
+initEnemies = [Player "Monstertje" 100 (325,375) 5 East "test", Player "Monstertje2" 100 (325,-225) 5 East "test"  ]
+
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player

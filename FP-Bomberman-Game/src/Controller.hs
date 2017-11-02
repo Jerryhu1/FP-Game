@@ -17,16 +17,17 @@ module Controller where
         do 
            let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
                   | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
-                  | currentStsate gstate == GameOver = undefined -- Show gameover screen
-                  | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
-                  | otherwise                       = return gstate
-
-           g <- gs
+                  | currentState gstate == GameOver = undefined -- Show gameover screen
+                  | otherwise                       = return $ gstate
+           
+           pureGs <- gs
+           let g = snd $ withRandom (randomR (0,3)) pureGs
+           let enemyToMove = head (enemies g)
+           newGs <- return $ moveEnemyToPos g enemyToMove $ getPath g enemyToMove
+          
+           putStrLn ( show $getPath pureGs enemyToMove)
            putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
-           return g
-
-  moveEnemyRandomly :: Player -> Player
-  moveEnemyRandomly p = undefined  
+           return newGs
 
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
@@ -55,7 +56,24 @@ module Controller where
   checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
                           | otherwise                           = movePlayerInDir p                      
 
-  
+  p :: Pos
+  p = (325,325)
+
+  t = Player "Monstertje" 100 (325,375) 5 East "test"
+
+
+  moveEnemyToPos :: GameState -> Player -> Pos -> GameState
+  moveEnemyToPos gs p pos | getPos p == pos     = gs
+                          | otherwise           = modEnemy gs p $ checkifMovePlayer gs . changePlayerDir (getDirectionFromPos p pos)
+
+  getDirectionFromPos :: Player -> Pos -> Direction
+  getDirectionFromPos p pos | getX p > fst pos = East
+                            | getX p < fst pos = West
+                            | getY p < snd pos = North
+                            | getY p > snd pos = South
+                            | otherwise        = playerDirection p
+
+
   addGameObject :: Field -> Grid -> Grid
   addGameObject newField [] = []
   addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
@@ -70,14 +88,31 @@ module Controller where
   modPlayer :: GameState -> (Player -> Player) -> GameState
   modPlayer gstate f = gstate { player = f $ player gstate}
                             
+  modEnemy :: GameState -> Player -> (Player -> Player) -> GameState
+  modEnemy gstate enemy f = gstate { enemies = acc enemy f (enemies gstate) }
+                where acc :: Player -> (Player -> Player) -> [Player] -> [Player]
+                      acc enemy f (x:[]) | enemy == x   = [f x]
+                                         | otherwise    = error "Enemy doesn't exist?"
+                      acc enemy f (x:xs) | enemy == x   = f x : xs
+                                         | otherwise    = x : (acc enemy f xs)  
+  getPath :: GameState -> Player -> Pos
+  getPath gs p | rng == 0  = (getX p + 50, getY p)
+               | rng == 1  = (getX p - 50, getY p)
+               | rng == 2  = (getX p, getY p + 50)
+               | rng == 3  = (getX p, getY p - 50)
+               | otherwise = (getX p, getY p)    
+        where rng :: Int
+              rng = fst $ withRandom (randomR (0,3)) gs 
   
   
+  withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)
+  withRandom f gs = let (res, g') = f (gen gs)
+                      in ( res, gs { gen = g'} )
   
-  
-  
-  
-  
-  
+  genNumberByRange :: GameState -> (Int, GameState)
+  genNumberByRange gs
+        = let (n, g') = randomR (0,3) (gen gs)
+              in (n, gs { gen = g'})
   
   {-
   
