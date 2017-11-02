@@ -2,6 +2,7 @@ module Model.Player where
     
 import Model.Typeclasses.Positioned
 import Model.Grid
+import Model.Typeclasses.Renderizable
 
 data Player = Player {
         name :: String,
@@ -12,6 +13,9 @@ data Player = Player {
         --moveSpeed :: Double,
         sprite :: String
         }
+ instance Renderizable Player where
+        drawPlayer :: Player -> Picture
+        drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
 
 instance Positioned Player where
     getPos p = playerPosition p
