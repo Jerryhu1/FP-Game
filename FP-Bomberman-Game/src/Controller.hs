@@ -33,16 +33,22 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
-    | c== SpecialKey KeyLeft   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
-    | c== SpecialKey KeyDown   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
-    | c== SpecialKey KeyRight  = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
-    | c== Char ','             = setKeyState Down . modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
-  inputKey (EventKey c Up _ _) gstate = setKeyState Up gstate  
+    | c== SpecialKey KeyUp     = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
+    | c== SpecialKey KeyLeft   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
+    | c== SpecialKey KeyDown   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
+    | c== SpecialKey KeyRight  = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
+    | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
+  inputKey (EventKey c Up _ _) gstate = gstate {keyState = Up}  
   inputKey _ gstate = gstate 
   
+  modBombs :: GameState -> (Bombs-> Bombs) -> GameState
+  modBombs gstate f = gstate {bombs = f $ bombs gstate}
+  
 
-
+  --change the direction in which the player is positioned
+  changePlayerDir :: Direction -> Player -> Player
+  changePlayerDir dir player' = setDir dir player'
+  
   checkifMovePlayer :: GameState -> Player -> Player
   checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
                           | otherwise                           = movePlayerInDir p                      
@@ -55,14 +61,12 @@ module Controller where
                                    | otherwise                 = checkIfPlayerCollision p xs
                         
  
-  setKeyState :: KeyState -> GameState -> GameState
-  setKeyState k gstate = gstate { keyState = k}
   
   modGrid :: GameState -> (Grid -> Grid) -> GameState
-  modGrid gstate f = gstate { grid = f $ grid gstate}
+  modGrid gstate f = gstate { grid = f $ grid gstate, keyState = Down}
   
   modPlayer :: GameState -> (Player -> Player) -> GameState
-  modPlayer gstate f = gstate { player = f $ player gstate}
+  modPlayer gstate f = gstate { player = f $ player gstate, keyState = Down}
   
 
   

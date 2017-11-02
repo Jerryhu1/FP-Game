@@ -15,10 +15,12 @@ module Model.GameState where
         grid         :: Grid,
         currentState :: CurrentState,
         gen          :: StdGen,
-        keyState     :: KeyState
+        keyState     :: KeyState,
+        bombs        :: [Bomb]
         -- explosions :: [Field]
         -- enemies :: [Player]
     }
+
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
@@ -26,7 +28,7 @@ module Model.GameState where
     
     
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up []
 
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))

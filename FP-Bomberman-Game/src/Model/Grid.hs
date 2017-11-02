@@ -30,11 +30,10 @@ module Model.Grid where
 
     instance Positioned Field where
          getPos f = fieldPosition f
-         getX f = fst $ getPos f
-         getY f = snd $ getPos f    
+   
 
     instance HasArea Field where
-        inArea f (x,y) = let (x1,y1) = (getX f, getY f )
+        inArea f (x,y) = let (x1,y1) = getPos f
                              (x2,y2) = (+.) (x1,y1) (49, -49)
                          in x1 <= x && x <= x2 && y2 <= y && y <= y1
      
@@ -51,15 +50,16 @@ module Model.Grid where
 
     setFieldPosToPixels :: Field -> Field
     setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
-                            where xPos = getX f
-                                  yPos = getY f
+                            where (xPos, yPos) = getPos f
     {-
         If position is uneven, draw a metal block, otherwise grass
     -}
     setBlocks :: Grid -> Grid
     setBlocks []     = []
-    setBlocks (x:xs) | odd (getX x) && odd (getY x)  = (Field (getPos x) MetalBlock) : setBlocks xs
+    setBlocks (x:xs) | odd(xPos * yPos)  = (Field (getPos x) MetalBlock) : setBlocks xs
                      | otherwise = x : setBlocks xs
+              where (xPos, yPos) = getPos x
+                     
 
     addGameObject :: Field -> Grid -> Grid
     addGameObject newField [] = []
