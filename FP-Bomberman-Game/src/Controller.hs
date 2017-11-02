@@ -6,6 +6,7 @@ module Controller where
   import Model.Player
   import Model.Typeclasses.Positioned
   import Model.Grid
+  import Model.GameObject
   
   import Graphics.Gloss
   import Graphics.Gloss.Interface.IO.Game
@@ -36,25 +37,24 @@ module Controller where
     | c== SpecialKey KeyLeft   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
     | c== SpecialKey KeyDown   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
     | c== SpecialKey KeyRight  = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
-    | c== Char ','             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
-    | c== Char '.'             = modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = PowerUp}
+    | c== Char ','             = setKeyState Down . modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
   inputKey (EventKey c Up _ _) gstate = setKeyState Up gstate  
   inputKey _ gstate = gstate 
   
-  --change the direction in which the player is positioned
-  changePlayerDir :: Direction -> Player -> Player
-  changePlayerDir dir player' = setDir dir player'
+
 
   checkifMovePlayer :: GameState -> Player -> Player
   checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
                           | otherwise                           = movePlayerInDir p                      
 
-  
-  addGameObject :: Field -> Grid -> Grid
-  addGameObject newField [] = []
-  addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
-                                | otherwise                                   = x : addGameObject newField xs
-  
+
+
+  checkIfPlayerCollision :: Player -> Grid -> Bool
+  checkIfPlayerCollision _ []     = False
+  checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
+                                   | otherwise                 = checkIfPlayerCollision p xs
+                        
+ 
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
   
@@ -63,7 +63,8 @@ module Controller where
   
   modPlayer :: GameState -> (Player -> Player) -> GameState
   modPlayer gstate f = gstate { player = f $ player gstate}
-                            
+  
+
   
   
   

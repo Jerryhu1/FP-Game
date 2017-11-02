@@ -5,6 +5,7 @@ module Model.GameState where
 
     import Model.Player
     import Model.Grid
+    import Model.GameObject
     import Model.Typeclasses.Positioned
     import Model.Typeclasses.HasArea
     import Debug.Trace
@@ -59,11 +60,7 @@ module Model.GameState where
     testPlayer :: Player
     testPlayer = (Player "Jerry" 100 (-325,-275) 10 North "test")                                
 
-    checkIfPlayerCollision :: Player -> Grid -> Bool
-    checkIfPlayerCollision _ []     = False
-    checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                     | otherwise                 = checkIfPlayerCollision p xs
-
+ 
 
 {-}
     checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
