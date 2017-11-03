@@ -51,7 +51,8 @@ drawBomb b  | bombStatus b == UnExploded    = color red $ circleSolid 15
             | bombStatus b == Exploding     = drawExplosion b
 
 drawExplosion :: Bomb -> Picture
-drawExplosion b = color (dark red) $ rectangleSolid (blockSize*3) blockSize
+drawExplosion b =   let r = fromIntegral $ explosionRadius b in
+                    color (dark red) $ rectangleSolid (blockSize*r) (blockSize*r)
 
 
 setPosToPixels :: Pos -> Pos
@@ -85,7 +86,11 @@ drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
+drawPlayer p    | health p>0   = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
+                | otherwise    = translate' (getPos p) $ color blue $ text "RIP" 
 
 drawEnemy :: Player -> Picture
 drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize
+
+
+    

@@ -29,7 +29,7 @@ instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p) ++ "Goal: " ++ show (goal p)
 
 initPlayer :: Player
-initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
+initPlayer = Player "Jerry" 100 (-375,375) 10 West "test" (0,0)
 
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje" 100 (225,125) 5 South "test" (225, 75), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -175)]

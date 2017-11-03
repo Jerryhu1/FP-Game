@@ -30,13 +30,13 @@ module Model.GameObject where
                 r = 50 * explosionRadius b  
 
  addBomb :: Pos -> Bombs -> Bombs
- addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 24, explosionRadius = 2} : bs
+ addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 48, explosionRadius = 4} : bs
               
  setTimer :: Bombs -> Bombs
  setTimer bombs = filter (\b -> explosionTime b >0) $ map explosionCountDown bombs
     
  explosionCountDown :: Bomb -> Bomb
- explosionCountDown bomb    | timeTillExplode>12    = bomb {explosionTime = timeTillExplode}
+ explosionCountDown bomb    | timeTillExplode>24    = bomb {explosionTime = timeTillExplode}
                             | otherwise            = bomb { explosionTime = timeTillExplode, bombStatus = Exploding}
     where timeTillExplode = (explosionTime bomb)-1
 

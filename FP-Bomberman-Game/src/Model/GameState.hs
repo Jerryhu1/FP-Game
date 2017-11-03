@@ -21,7 +21,7 @@ module Model.GameState where
         -- enemies :: [Player]
     }
 
-
+    
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
@@ -75,25 +75,30 @@ module Model.GameState where
                                             || inArea a (x-1,y-49) -> True
                                         | otherwise                         -> False
 
-    playerCollisionBomb:: BombStatus -> Player -> Player 
-    playerCollisionBomb UnExploded pl = pl { health = (health pl) -30 }
-    playerCollisionBomb Exploding pl = pl { health = (health pl) -30 }
+
     
     checkifMovePlayer :: GameState -> Player -> Player
-    checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = checkCollisionBombs p $ bombs gs
-                          | otherwise                           = movePlayerInDir p
+    checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = p
+                            | otherwise                           = movePlayerInDir p
 
-     --TO DO: SAMENVOEGEN--
-    checkCollisionBombs :: Player -> Bombs -> Player
-    checkCollisionBombs p []     = p
-    checkCollisionBombs p (x:xs)  | checkCollision p x            = playerCollisionBomb (bombStatus x) p
-                            | otherwise                     = checkCollisionBombs p xs
+  --TO DO: SAMENVOEGEN--
+    checkCollisionBombs :: Bombs -> Player -> Player
+    checkCollisionBombs [] p     = p
+    checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ playerCollisionBomb (bombStatus x) p
+                                 | otherwise                     = checkCollisionBombs xs p
+
+
+    playerCollisionBomb:: BombStatus -> Player -> Player 
+    playerCollisionBomb UnExploded pl = pl 
+    playerCollisionBomb Exploding pl = pl { health = (health pl) -1 }
+
 
     checkCollisionField :: Player -> Grid -> Bool
     checkCollisionField _ []     = False
     checkCollisionField p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkCollision p x  = True
-                            | otherwise                 = checkCollisionField p xs
-
+                                  | otherwise                 = checkCollisionField p xs
+                            
+ 
     --change the direction in which the player is positioned
     changePlayerDir :: GameState -> Direction -> Player -> Player
     changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
