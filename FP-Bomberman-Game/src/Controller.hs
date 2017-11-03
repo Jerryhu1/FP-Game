@@ -49,7 +49,7 @@ module Controller where
   changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
   
   checkifMovePlayer :: GameState -> Player -> Player
-  checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = checkCollisionBombs p $ bombs gs 
+  checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = p
                           | otherwise                           = movePlayerInDir p                      
 
 

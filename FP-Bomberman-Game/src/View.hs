@@ -43,10 +43,15 @@ drawGrid grid = pictures $ map drawBox grid
 
 drawBombs :: Bombs -> Picture
 drawBombs bombs = pictures $ map drawBombs bombs
-    where drawBombs bomb = translate' (getPos bomb) drawBomb
+    where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
                           
-drawBomb :: Picture
-drawBomb = color red $ circleSolid 15 
+drawBomb :: Bomb -> Picture
+drawBomb b  | bombStatus b == UnExploded    = color red $ circleSolid 15 
+            | bombStatus b == Exploding     = drawExplosion b
+            
+drawExplosion :: Bomb -> Picture
+drawExplosion b = color (dark red) $ rectangleSolid (blockSize*3) blockSize
+            
 
 setPosToPixels :: Pos -> Pos
 setPosToPixels p = ((-375+xPos ),(375- yPos ))
@@ -83,5 +88,3 @@ drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 drawPlayer :: Player -> Picture
 drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
 
-drawExplosion :: Picture
-drawExplosion = color (dark red) $ rectangleSolid blockSize blockSize
