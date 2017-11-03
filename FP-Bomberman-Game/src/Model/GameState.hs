@@ -7,7 +7,6 @@ module Model.GameState where
     import Model.Grid
     import Model.GameObject
     import Model.Typeclasses.Positioned
-    import Model.Typeclasses.HasArea
     import Debug.Trace
     
     data GameState = GameState {
@@ -16,16 +15,19 @@ module Model.GameState where
         currentState :: CurrentState,
         gen          :: StdGen,
         keyState     :: KeyState,
-        enemies      :: [Player]
+        enemies      :: [Player],
+        bombs        :: [Bomb]
         -- explosions :: [Field]
         -- enemies :: [Player]
     }
+
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies
+    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies []
+
 
     getRNumber :: IO Int
     getRNumber = getStdRandom (randomR(1,100))
@@ -56,33 +58,43 @@ module Model.GameState where
                  | otherwise = False
                 where pos = fieldPosition f                          
 
-    checkIfPlayerCollision :: Player -> Grid -> Bool
-    checkIfPlayerCollision _ []     = False
-    checkIfPlayerCollision p (x:[])  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                     | otherwise                 = False
-    checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                     | otherwise                 = checkIfPlayerCollision p xs
-    checkField :: Player -> Field -> Bool
-    checkField pl f =   let (x,y) = getPos pl in
-                        case playerDirection pl of
-                    North   | inArea f (x,y+1) 
-                                || inArea f (x+49,y+1) -> True
-                            | otherwise                         -> False
-                    East    | inArea f (x+50,y)
-                                || inArea f (x+50,y-49) -> True
-                            | otherwise                         -> False
-                    South   | inArea f (x,y-50)
-                                || inArea f (x+49,y-50) -> True
-                            | otherwise                         -> False
-                    West    | inArea f (x-1,y)
-                                || inArea f (x-1,y-49) -> True
-                            | otherwise                         -> False
 
-    modPlayer :: GameState -> (Player -> Player) -> GameState
-    modPlayer gstate f = gstate { player = f $ player gstate}
+    checkCollision :: HasArea a => Player -> a -> Bool
+    checkCollision pl a = let (x,y) = getPos pl in
+                          case playerDirection pl of
+                                North   | inArea a (x,y+1)
+                                            || inArea a (x+49,y+1) -> True
+                                        | otherwise                         -> False
+                                East    | inArea a (x+50,y)
+                                            || inArea a (x+50,y-49) -> True
+                                        | otherwise                         -> False
+                                South   | inArea a (x,y-50)
+                                            || inArea a (x+49,y-50) -> True
+                                        | otherwise                         -> False
+                                West    | inArea a (x-1,y)
+                                            || inArea a (x-1,y-49) -> True
+                                        | otherwise                         -> False
 
+    playerCollisionBomb:: BombStatus -> Player -> Player 
+    playerCollisionBomb UnExploded pl = pl { health = (health pl) -30 }
+    playerCollisionBomb Exploding pl = pl { health = (health pl) -30 }
     
     checkifMovePlayer :: GameState -> Player -> Player
-    checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
-                            | otherwise                           = movePlayerInDir p
+    checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = checkCollisionBombs p $ bombs gs
+                          | otherwise                           = movePlayerInDir p
+
+     --TO DO: SAMENVOEGEN--
+    checkCollisionBombs :: Player -> Bombs -> Player
+    checkCollisionBombs p []     = p
+    checkCollisionBombs p (x:xs)  | checkCollision p x            = playerCollisionBomb (bombStatus x) p
+                            | otherwise                     = checkCollisionBombs p xs
+
+    checkCollisionField :: Player -> Grid -> Bool
+    checkCollisionField _ []     = False
+    checkCollisionField p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkCollision p x  = True
+                            | otherwise                 = checkCollisionField p xs
+
+    --change the direction in which the player is positioned
+    changePlayerDir :: GameState -> Direction -> Player -> Player
+    changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
 

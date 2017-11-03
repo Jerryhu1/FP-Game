@@ -16,7 +16,8 @@ viewPure :: GameState -> Picture
 viewPure gstate = pictures [ 
                                 drawGrid $ grid gstate,
                                 drawPlayer $ player gstate,
-                                pictures $ map drawEnemy (enemies gstate)
+                                pictures $ map drawEnemy (enemies gstate),
+                                drawBombs $ bombs gstate
                            ]
 {-case direction p of
                 North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
@@ -30,8 +31,6 @@ drawField f = case gameObject f of
                 Empty -> drawGrass
                 MetalBlock -> drawMetalBlock
                 StoneBlock -> drawStone
-                Bomb       -> drawBomb
-                Explosion  -> drawExplosion
 {-
     Takes a grid and draws rectangles on the corresponding positions
     1. Get all the positions in pixels
@@ -42,6 +41,13 @@ drawGrid :: Grid -> Picture
 drawGrid grid = pictures $ map drawBox grid
                 where fieldToDraw = map drawField grid
                       drawBox field = translate' (getPos field) (drawField field)
+
+drawBombs :: Bombs -> Picture
+drawBombs bombs = pictures $ map drawBombs bombs
+    where drawBombs bomb = translate' (getPos bomb) drawBomb
+                          
+drawBomb :: Picture
+drawBomb = color red $ circleSolid 15 
 
 setPosToPixels :: Pos -> Pos
 setPosToPixels p = ((-375+xPos ),(375- yPos ))
@@ -73,8 +79,7 @@ drawGrass = color green $ rectangleSolid blockSize blockSize
 drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
-drawBomb :: Picture
-drawBomb = color red $ circleSolid 15
+
 
 drawPlayer :: Player -> Picture
 drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize

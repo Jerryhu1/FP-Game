@@ -19,10 +19,11 @@ module Controller where
   step :: Float -> GameState -> IO GameState
   step secs gstate =
         do 
-           let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
+           let gs | currentState gstate == Loading  = setBreakableBlocks gstate
                   | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
                   | currentState gstate == GameOver = undefined -- Show gameover screen
-                  | otherwise                       = return $ gstate          
+                  | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
+                  | otherwise                       = return $ modBombs gstate setTimer
            pureGs <- gs
            let gsNew = snd $ withRandom (randomR (0,3)) pureGs
            let gsMod = foldl moveEnemy gsNew (enemies gsNew)
@@ -30,7 +31,7 @@ module Controller where
            return gsMod
 
   printCollision :: GameState -> String
-  printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
+  printCollision gs = show $ checkCollisionField (player gs) (grid gs)
 
   -- | Handle user input
   input :: Event -> GameState -> IO GameState
@@ -39,18 +40,26 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
-    | c== SpecialKey KeyLeft   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
-    | c== SpecialKey KeyDown   = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
-    | c== SpecialKey KeyRight  = setKeyState Down . modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
-    | c== Char ','             = setKeyState Down . modGrid gstate $ addGameObject $ Field {fieldPosition = getGridPos $ player gstate, gameObject = Bomb}
-  inputKey (EventKey c Up _ _) gstate = setKeyState Up gstate  
-  inputKey _ gstate = gstate 
+    | c== SpecialKey KeyUp     = modPlayer gstate $ changePlayerDir gstate North
+    | c== SpecialKey KeyLeft   = modPlayer gstate $ changePlayerDir gstate West
+    | c== SpecialKey KeyDown   = modPlayer gstate $ changePlayerDir gstate South
+    | c== SpecialKey KeyRight  = modPlayer gstate $ changePlayerDir gstate East
+    | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
+  inputKey (EventKey (SpecialKey _) Up _ _) gstate = gstate {keyState = Up}  
+  inputKey _ gstate = gstate
 
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
+
+
+
+  modBombs :: GameState -> (Bombs-> Bombs) -> GameState
+  modBombs gstate f = gstate {bombs = f $ bombs gstate}
   
   modGrid :: GameState -> (Grid -> Grid) -> GameState
-  modGrid gstate f = gstate { grid = f $ grid gstate}
-
+  modGrid gstate f = gstate { grid = f $ grid gstate, keyState = Down}
   
+  modPlayer :: GameState -> (Player -> Player) -> GameState
+  modPlayer gstate f = gstate { player = f $ player gstate, keyState = Down}
+  
+

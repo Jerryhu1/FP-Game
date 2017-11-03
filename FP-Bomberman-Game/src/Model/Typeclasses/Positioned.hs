@@ -6,13 +6,16 @@ data Direction = North | South | East | West deriving(Show, Eq)
 
 class Positioned a where
     getPos :: a -> Pos
-    getX :: a -> Int
-    getY :: a -> Int
+
 
 
 class Movable a where
     setPos :: Pos -> a -> a
     setDir :: Direction -> a -> a
+
+
+class HasArea a where
+    inArea :: a -> Pos -> Bool
 
 (+.) :: Pos -> Pos -> Pos
 (+.) (x,y) (x',y') = (x+x',y+y')

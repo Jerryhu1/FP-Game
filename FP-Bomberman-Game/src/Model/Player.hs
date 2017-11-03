@@ -3,6 +3,7 @@ module Model.Player where
 import Model.Typeclasses.Positioned
 import Model.Grid
 
+
 data Player = Player {
         name :: String,
         health :: Int,
@@ -18,8 +19,7 @@ data Player = Player {
 
 instance Positioned Player where
     getPos p = playerPosition p
-    getX p = fst $ getPos p
-    getY p = snd $ getPos p
+
 
 instance Movable Player where
     setPos pos player = player { playerPosition = pos }
@@ -30,10 +30,9 @@ instance Show Player where
 
 initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
-    
+
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje" 100 (225,125) 5 South "test" (225, 75), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -175)]
-
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -57,8 +56,4 @@ getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
             f = \x -> x - ((x-25) `mod` fieldSize)
-
---change the direction in which the player is positioned
-changePlayerDir :: Direction -> Player -> Player
-changePlayerDir dir player' = setDir dir player'
 

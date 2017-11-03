@@ -9,11 +9,11 @@ import System.Random
 
 -- Moves randomly through positions
 moveEnemy :: GameState -> Player -> GameState
-moveEnemy gs enemy | (goal enemy) /= (getPos enemy) && not (checkIfPlayerCollision enemy (grid gs) )
+moveEnemy gs enemy | (goal enemy) /= (getPos enemy) && not (checkCollisionField enemy (grid gs) )
                         = moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
-                   | (goal enemy) /= (getPos enemy) && checkIfPlayerCollision enemy (grid gs)
+                   | (goal enemy) /= (getPos enemy) && checkCollisionField enemy (grid gs)
                         = modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
-                   | otherwise                      +
+                   | otherwise
                         = modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
 
 setNewGoal :: GameState -> Player -> Player
@@ -26,7 +26,7 @@ setNewGoalWhenCollision gs e = e { goal = newGoal, playerDirection = getDirectio
                   where newGoal = getPathWhenCollision gs e
 
 moveEnemyToPos :: GameState -> Player -> Pos -> GameState
-moveEnemyToPos gs enemy pos = modEnemy gs enemy $ checkifMovePlayer gs . changePlayerDir (getDirectionFromPos enemy pos)
+moveEnemyToPos gs enemy pos = modEnemy gs enemy $ checkifMovePlayer gs . changePlayerDir gs (getDirectionFromPos enemy pos)
                         
 -- Modifies the gamestate of an enemy given a function that modifies ap layer
 modEnemy :: GameState -> Player -> (Player -> Player) -> GameState
@@ -58,8 +58,9 @@ getPathWhenCollision gs p | rng == 0  = (oldX + 50, oldY)
 
 -- Gets the direction when moving towards a position
 getDirectionFromPos :: Player -> Pos -> Direction
-getDirectionFromPos p pos | getX p > fst pos = West
-                          | getX p < fst pos = East
-                          | getY p < snd pos = North
-                          | getY p > snd pos = South
+getDirectionFromPos p pos | x > fst pos = West
+                          | x < fst pos = East
+                          | y < snd pos = North
+                          | y > snd pos = South
                           | otherwise        = playerDirection p
+                          where (x,y) = getPos p
