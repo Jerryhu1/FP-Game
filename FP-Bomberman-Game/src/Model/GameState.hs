@@ -75,22 +75,59 @@ module Model.GameState where
                                             || inArea a (x-1,y-49) -> True
                                         | otherwise                         -> False
 
+    modBombs :: GameState -> (Bombs-> Bombs) -> GameState
+    modBombs gstate f = gstate {bombs = f $ bombs gstate}
+  
+    modGrid :: GameState -> (Grid -> Grid) -> GameState
+    modGrid gstate f = gstate { grid = f $ grid gstate}
+  
+    modPlayer :: GameState -> (Player -> Player) -> GameState
+    modPlayer gstate f = gstate { player = f $ player gstate}
+
+    --COLLISION DETECTION --
+    --BOMBS VS GRID--
 
     
-    checkifMovePlayer :: GameState -> Player -> Player
-    checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = p
-                            | otherwise                           = movePlayerInDir p
+    modifyBombs :: GameState -> GameState
+    modifyBombs gs | length explodingBombs>0   = modifyGrid $ modifyPlayer $ modifyBombs gs
+                   | otherwise                 = modifyBombs gs
+            where modifyPlayer = \gs -> modPlayer gs $ checkCollisionBombs explodingBombs
+                  modifyGrid = \gs -> modGrid gs $ checkDestructionBlocks explodingBombs
+                  modifyBombs = \gs -> modBombs gs setTimer
+                  newBombs = setTimer $ bombs gs
+                  explodingBombs = filter (\b -> bombStatus b == Exploding) newBombs
+    
+    checkDestructionBlocks :: Bombs -> Grid -> Grid
+    checkDestructionBlocks b grid = foldl checkDestruction grid b
 
-  --TO DO: SAMENVOEGEN--
+    checkDestruction :: Grid -> Bomb -> Grid
+    checkDestruction [] b = []
+    checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = checkDestruction xs b 
+                              | otherwise                                         = x : checkDestruction xs b 
+  
+    
+
+       
+    --BOMBS VS PLAYER--    
     checkCollisionBombs :: Bombs -> Player -> Player
     checkCollisionBombs [] p     = p
-    checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ playerCollisionBomb (bombStatus x) p
+    checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ playerCollisionBomb p
                                  | otherwise                     = checkCollisionBombs xs p
+ 
+    playerCollisionBomb:: Player -> Player 
+    playerCollisionBomb pl = pl { health = (health pl) -1 }
 
 
-    playerCollisionBomb:: BombStatus -> Player -> Player 
-    playerCollisionBomb UnExploded pl = pl 
-    playerCollisionBomb Exploding pl = pl { health = (health pl) -1 }
+
+    --PLAYERS VS GRID--
+    --change the direction in which the player is positioned and possibly move player in that direction
+    changePlayerDir :: GameState -> Direction -> Player -> Player
+    changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
+
+    checkifMovePlayer :: GameState -> Player -> Player
+    checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = newP
+                            | otherwise                           = movePlayerInDir newP
+            where newP = checkCollisionBombs (bombs gs) p
 
 
     checkCollisionField :: Player -> Grid -> Bool
@@ -99,7 +136,5 @@ module Model.GameState where
                                   | otherwise                 = checkCollisionField p xs
                             
  
-    --change the direction in which the player is positioned
-    changePlayerDir :: GameState -> Direction -> Player -> Player
-    changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
+
 

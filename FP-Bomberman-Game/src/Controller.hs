@@ -30,9 +30,7 @@ module Controller where
   updateDynamics:: GameState -> GameState
   updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer gstate
                         | otherwise                 = update gstate
-          where update = moveEnemies . createRandomness . movePlayer . moveBombs
-                moveBombs = flip modBombs setTimer
-                movePlayer = flip modPlayer (checkCollisionBombs $ bombs gstate)
+          where update = moveEnemies . createRandomness . modifyBombs
                 createRandomness = \gs ->  snd $ withRandom (randomR (0,3)) gs
                 moveEnemies = \gs -> foldl moveEnemy gs (enemies gs)
                 --functies moveEnemies + createRandomness staan beter in een nieuwe functie modEnemies
@@ -56,18 +54,10 @@ module Controller where
     | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
   inputKey (EventKey (SpecialKey _) Up _ _) gstate = gstate {keyState = Up}  
   inputKey _ gstate = gstate
-
+  
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
 
 
-  modBombs :: GameState -> (Bombs-> Bombs) -> GameState
-  modBombs gstate f = gstate {bombs = f $ bombs gstate}
-  
-  modGrid :: GameState -> (Grid -> Grid) -> GameState
-  modGrid gstate f = gstate { grid = f $ grid gstate}
-  
-  modPlayer :: GameState -> (Player -> Player) -> GameState
-  modPlayer gstate f = gstate { player = f $ player gstate}
   
 
