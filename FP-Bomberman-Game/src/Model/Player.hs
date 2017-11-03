@@ -3,6 +3,7 @@ module Model.Player where
 import Model.Typeclasses.Positioned
 import Model.Grid
 
+
 data Player = Player {
         name :: String,
         health :: Int,

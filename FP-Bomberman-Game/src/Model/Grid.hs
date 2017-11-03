@@ -1,7 +1,6 @@
 module Model.Grid where
 
     import Model.Typeclasses.Positioned
-    import Model.Typeclasses.HasArea 
     import Model.GameObject
     import System.Random
 

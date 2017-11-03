@@ -2,7 +2,6 @@ module Model.GameObject where
 
  import Model.Typeclasses.Positioned
  import Model.Typeclasses.Destructible
- import Model.Typeclasses.HasArea
  
  data GameObject = PowerUp 
                     | MetalBlock 
@@ -10,6 +9,8 @@ module Model.GameObject where
                     | Empty
                     deriving(Show, Ord, Eq)
 
+
+ ---BOMBS---
  data Bomb = Bomb {bombPosition :: Pos, bombStatus :: BombStatus, explosionTime :: Float, explosionRadius :: Int}
  
  data BombStatus = UnExploded | Exploding
@@ -32,13 +33,14 @@ module Model.GameObject where
  addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 24, explosionRadius = 2} : bs
               
  setTimer :: Bombs -> Bombs
- setTimer = undefined --map explosionCountDown
-    {-}
+ setTimer = map explosionCountDown
+    
  explosionCountDown :: Bomb -> Bomb
- explosionCountDown bomb | timeTillExplode >0      = bomb {explosionTime = timeTillExplode}
-                         | otherwise               = addExplosion 
+ explosionCountDown bomb = bomb {explosionTime = timeTillExplode}
     where timeTillExplode = (explosionTime bomb)-1
-    -}
+
+    
+ ---EXPLOSIONS
  
 
  

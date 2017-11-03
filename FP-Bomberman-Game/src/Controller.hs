@@ -18,13 +18,13 @@ module Controller where
         do 
            let gs | currentState gstate == Loading  = setBreakableBlocks gstate 
                   | keyState gstate == Down         = return $ modPlayer gstate $ checkifMovePlayer gstate
-                  | otherwise                       = return gstate
+                  | otherwise                       = return $ modBombs gstate setTimer
            g <- gs
            putStrLn $ (printCollision gstate ++ show (player gstate) ++ show secs)
            return g
 
   printCollision :: GameState -> String
-  printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
+  printCollision gs = show $ checkCollisionField (player gs) (grid gs)
 
   -- | Handle user input
   input :: Event -> GameState -> IO GameState
@@ -33,34 +33,40 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir North
-    | c== SpecialKey KeyLeft   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir West
-    | c== SpecialKey KeyDown   = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir South
-    | c== SpecialKey KeyRight  = modPlayer gstate $ checkifMovePlayer gstate . changePlayerDir East
+    | c== SpecialKey KeyUp     = modPlayer gstate $ changePlayerDir gstate North
+    | c== SpecialKey KeyLeft   = modPlayer gstate $ changePlayerDir gstate West
+    | c== SpecialKey KeyDown   = modPlayer gstate $ changePlayerDir gstate South
+    | c== SpecialKey KeyRight  = modPlayer gstate $ changePlayerDir gstate East
     | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
-  inputKey (EventKey c Up _ _) gstate = gstate {keyState = Up}  
+  inputKey (EventKey (SpecialKey _) Up _ _) gstate = gstate {keyState = Up}  
   inputKey _ gstate = gstate 
   
-  modBombs :: GameState -> (Bombs-> Bombs) -> GameState
-  modBombs gstate f = gstate {bombs = f $ bombs gstate}
+
   
 
   --change the direction in which the player is positioned
-  changePlayerDir :: Direction -> Player -> Player
-  changePlayerDir dir player' = setDir dir player'
+  changePlayerDir :: GameState -> Direction -> Player -> Player
+  changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
   
   checkifMovePlayer :: GameState -> Player -> Player
-  checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
+  checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = checkCollisionBombs p $ bombs gs 
                           | otherwise                           = movePlayerInDir p                      
 
 
+  --TO DO: SAMENVOEGEN--
+  checkCollisionBombs :: Player -> Bombs -> Player
+  checkCollisionBombs p []     = p
+  checkCollisionBombs p (x:xs)  | checkCollision p x            = playerCollisionBomb (bombStatus x) p
+                                | otherwise                     = checkCollisionBombs p xs
 
-  checkIfPlayerCollision :: Player -> Grid -> Bool
-  checkIfPlayerCollision _ []     = False
-  checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                   | otherwise                 = checkIfPlayerCollision p xs
+  checkCollisionField :: Player -> Grid -> Bool
+  checkCollisionField _ []     = False
+  checkCollisionField p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkCollision p x  = True
+                                | otherwise                 = checkCollisionField p xs
                         
  
+  modBombs :: GameState -> (Bombs-> Bombs) -> GameState
+  modBombs gstate f = gstate {bombs = f $ bombs gstate}
   
   modGrid :: GameState -> (Grid -> Grid) -> GameState
   modGrid gstate f = gstate { grid = f $ grid gstate, keyState = Down}

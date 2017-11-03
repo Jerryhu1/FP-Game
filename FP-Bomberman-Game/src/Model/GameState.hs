@@ -7,7 +7,6 @@ module Model.GameState where
     import Model.Grid
     import Model.GameObject
     import Model.Typeclasses.Positioned
-    import Model.Typeclasses.HasArea
     import Debug.Trace
     
     data GameState = GameState {
@@ -73,22 +72,29 @@ module Model.GameState where
 -}
 
 
-    checkField :: Player -> Field -> Bool
-    checkField pl f =   let (x,y) = getPos pl in
+    checkCollision :: HasArea a => Player -> a -> Bool
+    checkCollision pl a =   let (x,y) = getPos pl in
                         case playerDirection pl of
-                    North   | inArea f (x,y+1) 
-                                || inArea f (x+49,y+1) -> True
+                    North   | inArea a (x,y+1) 
+                                || inArea a (x+49,y+1) -> True
                             | otherwise                         -> False
-                    East    | inArea f (x+50,y)
-                                || inArea f (x+50,y-49) -> True
+                    East    | inArea a (x+50,y)
+                                || inArea a (x+50,y-49) -> True
                             | otherwise                         -> False
-                    South   | inArea f (x,y-50)
-                                || inArea f (x+49,y-50) -> True
+                    South   | inArea a (x,y-50)
+                                || inArea a (x+49,y-50) -> True
                             | otherwise                         -> False
-                    West    | inArea f (x-1,y)
-                                || inArea f (x-1,y-49) -> True
+                    West    | inArea a (x-1,y)
+                                || inArea a (x-1,y-49) -> True
                             | otherwise                         -> False
 
+
+    playerCollisionBomb:: BombStatus -> Player -> Player 
+    playerCollisionBomb UnExploded pl = pl { health = (health pl) -30 }
+    playerCollisionBomb Exploding pl = pl { health = (health pl) -30 }
+    
+        
+        
                             {-
     checkField :: Player -> Field -> Bool
     checkField pl f = case playerDirection pl of                     

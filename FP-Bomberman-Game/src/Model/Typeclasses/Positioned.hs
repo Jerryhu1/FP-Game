@@ -13,6 +13,10 @@ class Movable a where
     setPos :: Pos -> a -> a
     setDir :: Direction -> a -> a
 
+
+class HasArea a where
+    inArea :: a -> Pos -> Bool
+
 (+.) :: Pos -> Pos -> Pos
 (+.) (x,y) (x',y') = (x+x',y+y')
 
