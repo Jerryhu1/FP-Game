@@ -51,8 +51,6 @@ module Controller where
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
 
-
-
   modBombs :: GameState -> (Bombs-> Bombs) -> GameState
   modBombs gstate f = gstate {bombs = f $ bombs gstate}
   

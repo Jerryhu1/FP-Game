@@ -50,7 +50,7 @@ calcNewPos pos player' = getBound posTimesVel $ getPos player'
 getBound :: Pos -> Pos -> Pos
 getBound (x,y) (x',y') = (newX, newY)
     where newX = max (-375) $ min 375 $ x+x'
-          newY = max (-375) $ min 375 $ y+y'
+          newY = max (-225) $ min 375 $ y+y'
     
 getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
