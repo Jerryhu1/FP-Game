@@ -20,11 +20,6 @@ viewPure gstate = pictures [
                                 drawGrid $ grid gstate,
                                 render gstate
                            ]
-{-case direction p of
-                North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
-                South -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
-                East  -> translate' (getPos p) $ color blue $ thickArc (90) (-270) 20 10
-                West  -> translate' (getPos p) $ color blue $ thickArc (-90) (-270) 20 10-}
 
 drawField :: Field -> Picture
 drawField f = render $ gameObject f
@@ -48,7 +43,8 @@ drawBomb b  | bombStatus b == UnExploded    = render b
             | bombStatus b == Exploding     = drawExplosion b
 
 drawExplosion :: Bomb -> Picture
-drawExplosion b = color (dark red) $ rectangleSolid (blockSize*3) blockSize
+drawExplosion b =   let r = fromIntegral $ explosionRadius b in
+                    color (dark red) $ rectangleSolid (blockSize*r) (blockSize*r)
 
 
 setPosToPixels :: Pos -> Pos
@@ -79,7 +75,11 @@ drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $  png "res/bomberman-idle.png"
+drawPlayer p    | health p>0   = translate' (getPos p) $ color blue $  png "res/bomberman-idle.png"
+                | otherwise    = translate' (getPos p) $ color blue $ text "RIP"
 
 drawEnemy :: Player -> Picture
 drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize
+
+
+    

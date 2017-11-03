@@ -36,7 +36,8 @@ instance Renderizable Player where
     render p = translate' (getPos p) $ sprite p
 
 initPlayer :: Player
-initPlayer = Player "Jerry" 100 (-375,375) 5 West (0,0) Alive (png "res/bomberman-idle.png")
+initPlayer = Player "Jerry" 100 (-375,375) 10 West (0,0) Alive (png "res/bomberman-idle.png")
+
 
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje" 100 (225,125) 5 South (225, 75) Alive (png "res/bomberman-idle.png"), Player "Monstertje2" 100 (325,-225) 5 East (325, -175) Alive (png "res/bomberman-idle.png")]
