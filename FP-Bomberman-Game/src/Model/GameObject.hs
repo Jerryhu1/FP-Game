@@ -47,7 +47,7 @@ module Model.GameObject where
     render b = case bombStatus b of
                     UnExploded -> translate' (getPos b) (sprite b)
                     Exploding  -> let r = fromIntegral $ explosionRadius b in
-                                  color (dark red) $ rectangleSolid (50*r) (50*r)
+                                  translate' (getPos b) $ color (dark red) $ rectangleSolid (50*r) (50*r)
 
 
 
