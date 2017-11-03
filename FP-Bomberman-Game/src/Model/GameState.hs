@@ -24,8 +24,6 @@ module Model.GameState where
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
-    
-    
     initGame :: GameState
     initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies
 
@@ -49,7 +47,7 @@ module Model.GameState where
                             rng <- getRNumber
                             let obj = gameObject f
                             return (case obj of 
-                                Empty | rng > 100 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
+                                Empty | rng > 70 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
                                       | otherwise                      -> f
                                 _                                      -> f )
    
@@ -58,21 +56,12 @@ module Model.GameState where
                  | otherwise = False
                 where pos = fieldPosition f                          
 
- 
     checkIfPlayerCollision :: Player -> Grid -> Bool
     checkIfPlayerCollision _ []     = False
+    checkIfPlayerCollision p (x:[])  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
+                                     | otherwise                 = False
     checkIfPlayerCollision p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkField p x == True  = True
-                                        | otherwise                 = checkIfPlayerCollision p xs
-                            
-{-}
-    checkIfPlayerCollision p (x:[]) | gameObject x == Empty     = False
-                                    | gameObject x == PowerUp   = False -- Should still check for collision and pick up item
-                                    | otherwise                 = checkField p x
-    checkIfPlayerCollision p (x:xs) | gameObject x == Empty     = checkIfPlayerCollision p xs
-                                    | otherwise                 = if (checkField p x == True) then True else checkIfPlayerCollision p xs
--}
-
-
+                                     | otherwise                 = checkIfPlayerCollision p xs
     checkField :: Player -> Field -> Bool
     checkField pl f =   let (x,y) = getPos pl in
                         case playerDirection pl of
@@ -95,34 +84,5 @@ module Model.GameState where
     
     checkifMovePlayer :: GameState -> Player -> Player
     checkifMovePlayer gs p  | checkIfPlayerCollision p $ grid gs  = p
-                            | otherwise                           = movePlayerInDir p           
-                            {-
-    checkField :: Player -> Field -> Bool
-    checkField pl f = case playerDirection pl of                     
-                      North | (getY pl == getY f + 50 && (getX pl >= getX f && getX pl < getX f + 49)
-                              || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
-                            | otherwise -> False
-                      East  | (getX pl + 50) == getX f && (getY pl >= getY f - 49)
-                              && (getY pl - 50 <= getY f - 1 ) -> True
-                            | otherwise -> False
-                      South |  (getY pl - 50 == getY f && (getX pl >= getX f && getX pl < getX f + 49)
-                                 || (getX pl + 49 >= getX f && getX pl + 49 < getX f + 49)) -> True
-                            | otherwise -> False
-                      West  |(getX pl) == getX f + 50 && (getY pl >= getY f - 49)
-                               && (getY pl - 50 <= getY f - 1 ) -> True
-                            | otherwise -> False
+                            | otherwise                           = movePlayerInDir p
 
-                            
-    breakBlocks :: [Field] -> Grid -> Grid
-    breakBlocks (x:[]) gr = setExplosion x gr
-    breakBlocks (x:xs) gr = breakBlocks xs newGrid
-                    where newGrid = setExplosion x gr
-
-    setExplosion ::  Grid -> [Field] -> Grid
-    setExplosion (x:[]) (y:[]) | gameObject x == MetalBlock         = [y]
-                               | getPos x == getPos f  = [x { gameObject = Explosion }]
-                               | otherwise                         = [y]
-    setExplosion (x:xs) (y:ys) | gameObject x == MetalBlock         = x : setExplosion  xs
-                               | getPos x == getPos f  = [x { gameObject = Explosion }]
-                               | otherwise                         = x : setExplosion f xs
-                               -}

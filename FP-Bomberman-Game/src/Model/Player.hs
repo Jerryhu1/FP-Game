@@ -32,7 +32,7 @@ initPlayer :: Player
 initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
     
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" 100 (225,125) 5 East "test" (175, 125), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -375)]
+initEnemies = [Player "Monstertje" 100 (225,125) 5 South "test" (225, 75), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -175)]
 
 
 --if no collision occures, move player in the direction he is facing

@@ -25,8 +25,9 @@ module Controller where
                   | otherwise                       = return $ gstate          
            pureGs <- gs
            let gsNew = snd $ withRandom (randomR (0,3)) pureGs
-           putStrLn( show $ head $ enemies gsNew)
-           return $ moveEnemy gsNew (head $ enemies gsNew)
+           let gsMod = foldl moveEnemy gsNew (enemies gsNew)
+           putStrLn( show $  enemies gsNew)
+           return gsMod
 
   printCollision :: GameState -> String
   printCollision gs = show $ checkIfPlayerCollision (player gs) (grid gs)
@@ -51,24 +52,5 @@ module Controller where
   
   modGrid :: GameState -> (Grid -> Grid) -> GameState
   modGrid gstate f = gstate { grid = f $ grid gstate}
-                        
-  
-  
-  {-
-  
-  --nu met Lenses
-  inputKey' :: Event -> GameState -> GameState
-  inputKey' (EventKey (SpecialKey c) _ _ _) gstate
-    | c== KeyUp     = player.playerPosition._2 +~ 1 $ gstate
-    | c== KeyLeft   = player.playerPosition._1 -~ 1 $ gstate
-    | c== KeyDown   = player.playerPosition._2 -~ 1 $ gstate
-    | c== KeyRight  = player.playerPosition._1 +~ 1 $ gstate
-  inputKey' _ gstate = gstate -- Otherwise keep the same
-  
-  -}
-  
-  
-  
-  
-  
+
   
