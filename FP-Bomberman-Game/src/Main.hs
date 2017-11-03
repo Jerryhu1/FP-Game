@@ -5,9 +5,10 @@ import Model.GameState
 import View
 
 import Graphics.Gloss.Interface.IO.Game
+import Graphics.Gloss
 
 main :: IO ()
-main = playIO (InWindow "Counter" (800, 800) (0, 0)) -- Or FullScreen
+main = playIO (InWindow "Counter" (1000, 1000) (0, 0)) -- Or FullScreen
               white            -- Background color
               10               -- Frames per second
               initGame         -- Initial state

@@ -1,7 +1,9 @@
 module Model.GameState where
 
     import System.Random
-    import Graphics.Gloss.Interface.Pure.Game
+    import Graphics.Gloss.Game
+
+    import Model.Typeclasses.Renderizable
 
     import Model.Player
     import Model.Grid
@@ -21,12 +23,15 @@ module Model.GameState where
         -- enemies :: [Player]
     }
 
+    instance Renderizable GameState where
+        render gs = pictures[ render $ player gs, pictures (map render (enemies gs) ), pictures ( map render (bombs gs) ) ]
+
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
     initGame :: GameState
-    initGame = GameState initPlayer createGrid Loading (mkStdGen 0) Up initEnemies []
+    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies []
 
 
     getRNumber :: IO Int
@@ -97,4 +102,5 @@ module Model.GameState where
     --change the direction in which the player is positioned
     changePlayerDir :: GameState -> Direction -> Player -> Player
     changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir player'
+
 

@@ -1,21 +1,25 @@
 module Model.Player where    
-    
+
+import Graphics.Gloss.Game
+
 import Model.Typeclasses.Positioned
+import Model.Typeclasses.Renderizable
+
 import Model.Grid
 
 
 data Player = Player {
-        name :: String,
-        health :: Int,
-        playerPosition :: Pos,
-        velocity :: Vel,
-        playerDirection :: Direction,
-        --moveSpeed :: Double,
-        sprite :: String,
-        goal :: Pos
+            name :: String,
+            health :: Int,
+            playerPosition :: Pos,
+            velocity :: Vel,
+            playerDirection :: Direction,
+            goal :: Pos,
+            state :: PlayerState,
+            sprite :: Picture
         }deriving(Eq)
 
-            
+data PlayerState = Dead | Alive deriving(Eq)
 
 instance Positioned Player where
     getPos p = playerPosition p
@@ -28,11 +32,14 @@ instance Movable Player where
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p) ++ "Goal: " ++ show (goal p)
 
+instance Renderizable Player where
+    render p = translate' (getPos p) $ sprite p
+
 initPlayer :: Player
-initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
+initPlayer = Player "Jerry" 100 (-375,375) 5 West (0,0) Alive (png "res/bomberman-idle.png")
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" 100 (225,125) 5 South "test" (225, 75), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -175)]
+initEnemies = [Player "Monstertje" 100 (225,125) 5 South (225, 75) Alive (png "res/bomberman-idle.png"), Player "Monstertje2" 100 (325,-225) 5 East (325, -175) Alive (png "res/bomberman-idle.png")]
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player

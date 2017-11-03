@@ -1,23 +1,37 @@
 module Model.GameObject where
 
+ import Graphics.Gloss.Game
+
  import Model.Typeclasses.Positioned
+ import Model.Typeclasses.Renderizable
  import Model.Typeclasses.Destructible
- 
- data GameObject = PowerUp 
-                    | MetalBlock 
-                    | StoneBlock 
+
+ data GameObject = PowerUp
+                    | MetalBlock
+                    | StoneBlock
                     | Empty
                     deriving(Show, Ord, Eq)
 
+ instance Renderizable GameObject where
+        render MetalBlock = png "res/metal-block.png"
+        render StoneBlock = png "res/stone-block.png"
+        render Empty      = png "res/grass.png"
+        render PowerUp    = undefined
 
  ---BOMBS---
- data Bomb = Bomb {bombPosition :: Pos, bombStatus :: BombStatus, explosionTime :: Float, explosionRadius :: Int}
- 
+ data Bomb = Bomb {
+                    bombPosition :: Pos,
+                    bombStatus :: BombStatus,
+                    explosionTime :: Float,
+                    explosionRadius :: Int,
+                    sprite :: Picture
+                }
+
  data BombStatus = UnExploded | Exploding
     deriving(Show, Ord, Eq)
- 
+
  type Bombs = [Bomb]
-    
+
  instance Positioned Bomb where
     getPos b = bombPosition b
 
@@ -25,24 +39,28 @@ module Model.GameObject where
     inArea b (x,y)      | bombStatus b == UnExploded = x1 <= x && x <= x2 && y2 <= y && y <= y1
                         | otherwise                 = (x1-r <= x && x <= x+r && y2 <= y && y <= y1) ||
                                                       (x1 <= x && x <= x && y2-r <= y && y <= y1+r)
-        where   (x1,y1) = getPos b 
-                (x2,y2) = (+.) (x1,y1) (49, -49)  
-                r = 50 * explosionRadius b  
+        where   (x1,y1) = getPos b
+                (x2,y2) = (+.) (x1,y1) (49, -49)
+                r = 50 * explosionRadius b
+
+ instance Renderizable Bomb where
+    render UnExploded = translate' (getPos b) (sprite b)
+
 
  addBomb :: Pos -> Bombs -> Bombs
- addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 24, explosionRadius = 2} : bs
-              
+ addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 24, explosionRadius = 2, sprite = png "res/bomb-1.png"} : bs
+
  setTimer :: Bombs -> Bombs
  setTimer bombs = filter (\b -> explosionTime b >0) $ map explosionCountDown bombs
-    
+
  explosionCountDown :: Bomb -> Bomb
  explosionCountDown bomb    | timeTillExplode>12    = bomb {explosionTime = timeTillExplode}
                             | otherwise            = bomb { explosionTime = timeTillExplode, bombStatus = Exploding}
     where timeTillExplode = (explosionTime bomb)-1
 
-    
- ---EXPLOSIONS
- 
 
- 
- 
+ ---EXPLOSIONS
+
+
+
+

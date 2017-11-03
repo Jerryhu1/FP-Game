@@ -2,11 +2,14 @@
 --   the game state into a picture
 module View where
 
-import Graphics.Gloss
+import Graphics.Gloss.Game
+
+
 import Model.GameState
 import Model.Grid
 import Model.GameObject
 import Model.Typeclasses.Positioned
+import Model.Typeclasses.Renderizable
 import Model.Player
 
 view :: GameState -> IO Picture
@@ -15,9 +18,7 @@ view = return . viewPure
 viewPure :: GameState -> Picture
 viewPure gstate = pictures [ 
                                 drawGrid $ grid gstate,
-                                drawPlayer $ player gstate,
-                                pictures $ map drawEnemy (enemies gstate),
-                                drawBombs $ bombs gstate
+                                render gstate
                            ]
 {-case direction p of
                 North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
@@ -26,11 +27,7 @@ viewPure gstate = pictures [
                 West  -> translate' (getPos p) $ color blue $ thickArc (-90) (-270) 20 10-}
 
 drawField :: Field -> Picture
-drawField f = case gameObject f of
-                PowerUp -> drawPowerUp
-                Empty -> drawGrass
-                MetalBlock -> drawMetalBlock
-                StoneBlock -> drawStone
+drawField f = render $ gameObject f
 {-
     Takes a grid and draws rectangles on the corresponding positions
     1. Get all the positions in pixels
@@ -47,7 +44,7 @@ drawBombs bombs = pictures $ map drawBombs bombs
     where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
                           
 drawBomb :: Bomb -> Picture
-drawBomb b  | bombStatus b == UnExploded    = color red $ circleSolid 15 
+drawBomb b  | bombStatus b == UnExploded    = render b
             | bombStatus b == Exploding     = drawExplosion b
 
 drawExplosion :: Bomb -> Picture
@@ -59,9 +56,6 @@ setPosToPixels p = ((-375+xPos ),(375- yPos ))
                         where xPos = fst p
                               yPos = snd p
 
---Translates a picture by Pos
-translate' :: Pos -> Picture -> Picture
-translate' p = translate (fromIntegral $ fst p) (fromIntegral $ snd p)
 
 blockSize :: Float
 blockSize = 50.0
@@ -85,7 +79,7 @@ drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
 drawPlayer :: Player -> Picture
-drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
+drawPlayer p = translate' (getPos p) $ color blue $  png "res/bomberman-idle.png"
 
 drawEnemy :: Player -> Picture
 drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize

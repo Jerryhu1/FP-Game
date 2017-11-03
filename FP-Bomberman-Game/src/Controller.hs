@@ -18,7 +18,7 @@ module Controller where
   -- | Handle one iteration of the game
   step :: Float -> GameState -> IO GameState
   step secs gstate =
-        do 
+        do
            let gs | currentState gstate == Loading  = setBreakableBlocks gstate
                   | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
                   | currentState gstate == GameOver = undefined -- Show gameover screen
@@ -60,4 +60,10 @@ module Controller where
   modPlayer :: GameState -> (Player -> Player) -> GameState
   modPlayer gstate f = gstate { player = f $ player gstate, keyState = Down}
   
+  checkIfPlayerIsAlive :: GameState -> GameState
+  checkIfPlayerIsAlive gs | state (player gs) == Alive  = gs
+                          | otherwise                   = gs { currentState = GameOver }
+
+
+
 
