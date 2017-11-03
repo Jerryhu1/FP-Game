@@ -35,10 +35,7 @@ module Model.Grid where
         inArea f (x,y) = let (x1,y1) = getPos f
                              (x2,y2) = (+.) (x1,y1) (49, -49)
                          in x1 <= x && x <= x2 && y2 <= y && y <= y1
-     
-
-
-
+    
                          
     {-
     Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x

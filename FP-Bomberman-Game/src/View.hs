@@ -15,8 +15,9 @@ view = return . viewPure
 viewPure :: GameState -> Picture
 viewPure gstate = pictures [ 
                                 drawGrid $ grid gstate,
-                                drawBombs $ bombs gstate,                                
-                                drawPlayer $ player gstate
+                                drawPlayer $ player gstate,
+                                pictures $ map drawEnemy (enemies gstate),
+                                drawBombs $ bombs gstate
                            ]
 {-case direction p of
                 North -> translate' (getPos p) $ color blue $ thickArc 0 180 20 10
@@ -48,10 +49,10 @@ drawBombs bombs = pictures $ map drawBombs bombs
 drawBomb :: Bomb -> Picture
 drawBomb b  | bombStatus b == UnExploded    = color red $ circleSolid 15 
             | bombStatus b == Exploding     = drawExplosion b
-            
+
 drawExplosion :: Bomb -> Picture
 drawExplosion b = color (dark red) $ rectangleSolid (blockSize*3) blockSize
-            
+
 
 setPosToPixels :: Pos -> Pos
 setPosToPixels p = ((-375+xPos ),(375- yPos ))
@@ -83,8 +84,8 @@ drawGrass = color green $ rectangleSolid blockSize blockSize
 drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
-
-
 drawPlayer :: Player -> Picture
 drawPlayer p = translate' (getPos p) $ color blue $ rectangleSolid blockSize blockSize
 
+drawEnemy :: Player -> Picture
+drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize

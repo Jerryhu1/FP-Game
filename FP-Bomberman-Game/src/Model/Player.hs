@@ -11,8 +11,9 @@ data Player = Player {
         velocity :: Vel,
         playerDirection :: Direction,
         --moveSpeed :: Double,
-        sprite :: String
-        }
+        sprite :: String,
+        goal :: Pos
+        }deriving(Eq)
 
             
 
@@ -25,13 +26,13 @@ instance Movable Player where
     setDir dir player = player { playerDirection = dir}
 
 instance Show Player where
-    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p)
+    show p = show(getPos p) ++ "Player: " ++ name p ++ " Health: " ++ show(health p) ++ " Direction: " ++ show (playerDirection p) ++ "Goal: " ++ show (goal p)
 
 initPlayer :: Player
-initPlayer = Player "Jerry" 100 (-375,375) 10 West "test"
-    
-    
+initPlayer = Player "Jerry" 100 (-375,375) 5 West "test" (0,0)
 
+initEnemies :: [Player]
+initEnemies = [Player "Monstertje" 100 (225,125) 5 South "test" (225, 75), Player "Monstertje2" 100 (325,-225) 5 East "test" (325, -175)]
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -56,4 +57,3 @@ getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
             f = \x -> x - ((x-25) `mod` fieldSize)
 
-     
