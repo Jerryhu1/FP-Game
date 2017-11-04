@@ -25,7 +25,6 @@ module Controller where
                   | otherwise                       = return $ updateDynamics gstate
            pureGs <- gs
            let animateGs = modPlayer pureGs (animatePlayer)
-           putStrLn( show $  player pureGs)
            return animateGs
 
   updateDynamics:: GameState -> GameState

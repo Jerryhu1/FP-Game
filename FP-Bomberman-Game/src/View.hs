@@ -16,10 +16,11 @@ view :: GameState -> IO Picture
 view = return . viewPure
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures [ 
+viewPure gstate  = pictures [
+                                drawBG,
                                 drawGrid $ grid gstate,
                                 render gstate
-                           ]
+                            ]
 
 drawField :: Field -> Picture
 drawField f = render $ gameObject f
@@ -53,28 +54,9 @@ setPosToPixels p = ((-375+xPos ),(375- yPos ))
                               yPos = snd p
 
 
+drawBG :: Picture
+drawBG = translate' (-25, 75) $ png "res/bg.png"
+
 blockSize :: Float
 blockSize = 50.0
-
-grassColor :: Color
-grassColor = green
-
-stoneColor :: Color
-stoneColor = dark orange
-
-drawStone :: Picture
-drawStone = color stoneColor $ rectangleSolid blockSize blockSize
-
-drawMetalBlock :: Picture
-drawMetalBlock = color (greyN 0.5) $ rectangleSolid blockSize blockSize
-
-drawGrass :: Picture
-drawGrass = color green $ rectangleSolid blockSize blockSize
-
-drawPowerUp :: Picture
-drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
-
-drawEnemy :: Player -> Picture
-drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize
-
 
