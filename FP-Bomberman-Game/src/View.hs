@@ -40,10 +40,9 @@ drawBombs bombs = pictures $ map drawBombs bombs
     where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
 
 drawBomb :: Bomb -> Picture
-drawBomb b  | bombStatus b == UnExploded    = render b
-            | bombStatus b == Exploding     = drawExplosion b
+drawBomb b = render b
 
-drawExplosion :: Bomb -> Picture
+drawExplosion :: Explosion -> Picture
 drawExplosion b =   let r = fromIntegral $ explosionRadius b in
                     color (dark red) $ rectangleSolid (blockSize*2*r) (blockSize*2*r)
 

@@ -18,18 +18,17 @@ module Model.GameState where
         gen          :: StdGen,
         keyState     :: KeyState,
         enemies      :: [Player],
-        bombs        :: [Bomb]
-        -- explosions :: [Field]
-        -- enemies :: [Player]
+        dynamics     :: Dynamics
     }
+
     instance Renderizable GameState where
-        render gs = pictures[ render $ player gs, pictures (map render (enemies gs) ), pictures ( map render (bombs gs) ) ]
+        render gs = pictures[ render $ player gs, pictures (map render (enemies gs) ), render (dynamics gs) ]
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
     initGame :: GameState
-    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies []
+    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies initDynamics
 
 
     getRNumber :: IO Int
@@ -82,8 +81,8 @@ module Model.GameState where
 
                             
 
-    modBombs :: GameState -> (Bombs-> Bombs) -> GameState
-    modBombs gstate f = gstate {bombs = f $ bombs gstate}
+    modDynamics :: GameState -> (Dynamics-> Dynamics) -> GameState
+    modDynamics gstate f = gstate {dynamics = f $ dynamics gstate}
   
     modGrid :: GameState -> (Grid -> Grid) -> GameState
     modGrid gstate f = gstate { grid = f $ grid gstate}
@@ -97,19 +96,18 @@ module Model.GameState where
     --BOMBS VS GRID--
 
     
-    modifyBombs :: GameState -> GameState
-    modifyBombs gs | length explodingBombs>0   = modifyGrid $ modifyPlayer $ modifyBombs gs
-                   | otherwise                 = modifyBombs gs
-            where modifyPlayer = \gs -> modPlayer gs $ checkCollisionBombs explodingBombs
-                  modifyGrid = \gs -> modGrid gs $ checkDestructionBlocks explodingBombs
-                  modifyBombs = \gs -> modBombs gs setTimer
-                  newBombs = setTimer $ bombs gs
-                  explodingBombs = filter (\b -> bombStatus b == Exploding) newBombs
+    modifyDynamics :: GameState -> GameState
+    modifyDynamics gs | length (explodingBombs gs)>0   = modifyGrid $ modifyPlayer $ modifyDynamicsBombs gs
+                      | otherwise                      = modifyDynamicsBombs gs
+            where modifyPlayer = \gs -> modPlayer gs $ checkCollisionBombs (explodingBombs gs)
+                  modifyGrid = \gs -> modGrid gs $ checkDestructionBlocks (explodingBombs gs)
+                  modifyDynamicsBombs = \gs -> modDynamics gs modifyBombs
+                  explodingBombs = \gs -> explosions $ dynamics gs
     
-    checkDestructionBlocks :: Bombs -> Grid -> Grid
-    checkDestructionBlocks b grid = foldl checkDestruction grid b
+    checkDestructionBlocks :: Explosions -> Grid -> Grid
+    checkDestructionBlocks ex grid = foldl checkDestruction grid ex
 
-    checkDestruction :: Grid -> Bomb -> Grid
+    checkDestruction :: Grid -> Explosion -> Grid
     checkDestruction [] b = []
     checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = checkDestruction xs b 
                               | otherwise                                         = x : checkDestruction xs b 
@@ -118,7 +116,7 @@ module Model.GameState where
 
        
     --BOMBS VS PLAYER--    
-    checkCollisionBombs :: Bombs -> Player -> Player
+    checkCollisionBombs :: Explosions -> Player -> Player
     checkCollisionBombs [] p     = p
     checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ playerCollisionBomb p
                                  | otherwise                     = checkCollisionBombs xs p
@@ -136,7 +134,7 @@ module Model.GameState where
     checkifMovePlayer :: GameState -> Player -> Player
     checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = newP
                             | otherwise                           = movePlayerInDir newP
-            where newP = checkCollisionBombs (bombs gs) p
+            where newP = checkCollisionBombs (explosions $ dynamics gs) p
 
 
     checkCollisionField :: Player -> Grid -> Bool
