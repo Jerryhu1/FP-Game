@@ -28,7 +28,7 @@ module Model.GameState where
                   | otherwise = pictures pics
                   where pics = [ render $ player gs
                                          , pictures (map render (enemies gs) )
-                                         , pictures ( map render (bombs gs) )]
+                                         ,  (render (dynamics gs))]
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    

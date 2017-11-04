@@ -3,11 +3,12 @@ module Model.Grid where
     import Model.Typeclasses.Positioned
     import Model.GameObject
     import System.Random
+    import GHC.Generics
 
     data Field = Field {
         fieldPosition :: Pos,
         gameObject :: GameObject
-    } deriving (Eq, FromJSON, ToJSON)
+    } deriving (Eq)
 
     instance Show Field where
         show f = show(fieldPosition f) ++ " Object: " ++ show(gameObject f)
