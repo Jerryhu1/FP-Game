@@ -48,6 +48,11 @@ instance Renderizable Player where
 initPlayer :: Player
 initPlayer = Player "Jerry" Alive (-375,375) 10 West (0,0) Idle (png "res/bomberman-idle.png")
 
+playerWidth :: Int
+playerWidth = 29
+
+playerHeight :: Int
+playerHeight = 29
 
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje" Alive (225,125) 5 South (225, 75) Idle (png "res/bomberman-idle.png"),

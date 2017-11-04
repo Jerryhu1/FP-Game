@@ -44,7 +44,7 @@ drawBomb b  | bombStatus b == UnExploded    = render b
 
 drawExplosion :: Bomb -> Picture
 drawExplosion b =   let r = fromIntegral $ explosionRadius b in
-                    color (dark red) $ rectangleSolid (blockSize*r) (blockSize*r)
+                    color (dark red) $ rectangleSolid (blockSize*2*r) (blockSize*2*r)
 
 
 setPosToPixels :: Pos -> Pos
