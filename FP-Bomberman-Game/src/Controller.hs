@@ -20,11 +20,11 @@ module Controller where
   step secs gstate =
         do
            let gs | currentState gstate == Loading  = return gstate {currentState = Running} --setBreakableBlocks gstate
-                  | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
-                  | currentState gstate == GameOver = undefined -- Show gameover screen
+                  | currentState gstate == Paused   = return gstate -- Show pause screen and disable movement
+                  | currentState gstate == GameOver = return gstate -- Show gameover screen
                   | otherwise                       = return $ updateDynamics gstate
            pureGs <- gs
-           let animateGs = modPlayer pureGs (animatePlayer)
+           let animateGs = checkIfPlayerIsAlive $ modPlayer pureGs (animatePlayer)
            return animateGs
 
   updateDynamics:: GameState -> GameState
@@ -42,7 +42,7 @@ module Controller where
 
   -- | Handle user input
   input :: Event -> GameState -> IO GameState
-  input e gstate = return (inputKey e gstate)
+  input e gstate = return (handleInput e gstate)
   
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
@@ -51,11 +51,27 @@ module Controller where
     | c== SpecialKey KeyLeft   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
     | c== SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
     | c== SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
-    | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
+    | c== SpecialKey KeyEsc       = gstate { currentState = Paused }
+    | c== SpecialKey KeySpace            = modBombs gstate $ addBomb (getGridPos $ player gstate)
   inputKey (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
   inputKey _ gstate = gstate
-  
 
+  handleInput :: Event -> GameState -> GameState
+  handleInput ev gs | currentState gs == Running = inputKey ev gs
+                    | currentState gs == Paused = inputKeyPaused ev gs
+                    | currentState gs == GameOver = inputKeyMenu ev gs
+                    | otherwise                 = gs
+
+  inputKeyPaused :: Event -> GameState -> GameState
+  inputKeyPaused (EventKey c Down _ _) gstate
+    | c== SpecialKey KeyEsc       = gstate { currentState = Running }
+  inputKeyPaused _ gstate = gstate
+
+  inputKeyMenu :: Event -> GameState -> GameState
+  inputKeyMenu (EventKey c Down _ _) gstate
+      | c== Char 'y'       = initGame
+      | c== Char 'n'       = error "Much noob very wow"
+  inputKeyMenu _ gstate = gstate
 
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}

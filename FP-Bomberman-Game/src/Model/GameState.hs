@@ -22,7 +22,13 @@ module Model.GameState where
     }
 
     instance Renderizable GameState where
-        render gs = pictures[ render $ player gs, pictures (map render (enemies gs) ), render (dynamics gs) ]
+        render gs
+                  | currentState gs == Paused = pictures (png "res/pause-screen.png" : pics)
+                  | currentState gs == GameOver = pictures (png "res/lose-screen.png" : pics)
+                  | otherwise = pictures pics
+                  where pics = [ render $ player gs
+                                         , pictures (map render (enemies gs) )
+                                         , pictures ( map render (bombs gs) )]
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    

@@ -7,7 +7,7 @@ module Model.Grid where
     data Field = Field {
         fieldPosition :: Pos,
         gameObject :: GameObject
-    } deriving (Eq)
+    } deriving (Eq, FromJSON, ToJSON)
 
     instance Show Field where
         show f = show(fieldPosition f) ++ " Object: " ++ show(gameObject f)
