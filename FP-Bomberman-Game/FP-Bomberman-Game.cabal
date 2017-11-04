@@ -26,6 +26,7 @@ executable FP-Bomberman-Game-exe
   build-depends:       base,
                        gloss,
                        gloss-game,
+                       aeson,
                        random,
                        FP-Bomberman-Game
   default-language:    Haskell2010
