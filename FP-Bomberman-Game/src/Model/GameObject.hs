@@ -19,37 +19,19 @@ module Model.GameObject where
         render PowerUp    = undefined
 
 
+ setTimerBombs :: Bombs -> Explosions -> (Bombs,Explosions)
+ setTimerBombs bombs ex = let   setTimers = map explosionCountDown bombs
+                                newBombs = filter (\b -> timeTillExplosion b > 0) setTimers
+                                explodingBombs = filter (\b -> timeTillExplosion b == 0) setTimers
+                                newExplosions = makeExplosions explodingBombs ++ setTimerExplosion ex in
+                          (newBombs, newExplosions)
 
- --DYNAMICS---
- data Dynamics = Dynamics {
-                    bombs      :: [Bomb],
-                    explosions :: [Explosion]
-                }
+ makeExplosions :: Bombs -> Explosions
+ makeExplosions bs = map (\x -> addExplosion $ getPos x) bs
 
 
- instance Renderizable Dynamics where
-    render ds = pictures[ pictures ( map render (bombs ds) ), pictures ( map render (explosions ds) ) ]
-            
 
- initDynamics :: Dynamics
- initDynamics = Dynamics [] []
-
- --wordt elke step geupdate
- modifyBombs :: Dynamics -> Dynamics
- modifyBombs dynamics = dynamics {bombs = newBombs, explosions = newExplosions} 
-    where  setTimerBombs = setTimerBomb $ bombs dynamics
-           setTimerExplosions = filter (\a -> explosionTime a >0) $ setTimerExplosion $ explosions dynamics
-           newBombs = filter (\a -> timeTillExplosion a >0) setTimerBombs
-           newExplosions = addExplosions (filter (\a -> timeTillExplosion a ==0) setTimerBombs) setTimerExplosions
  
- addExplosions :: Bombs -> Explosions -> Explosions
- addExplosions bombs ex = map (\b -> addExplosion (getPos b)) bombs ++ ex
-
- addBombs :: Pos -> Dynamics -> Dynamics
- addBombs pos dynamics = modBombs dynamics (addBomb pos)
- 
- modBombs :: Dynamics -> (Bombs -> Bombs) -> Dynamics
- modBombs dynamics f = dynamics {bombs = f $ bombs dynamics}
  ---BOMBS---
  data Bomb = Bomb {
                     bombPosition :: Pos,
@@ -71,12 +53,9 @@ module Model.GameObject where
     render b = translate' (getPos b) (spriteBomb b)                    
 
 
- addBomb :: Pos -> Bombs -> Bombs
- addBomb pos bs = Bomb {bombPosition = pos, timeTillExplosion = 24, spriteBomb = png "res/bomb-1.png"} : bs
+ addBombs :: Pos -> Bombs -> Bombs
+ addBombs pos bs = Bomb {bombPosition = pos, timeTillExplosion = 24, spriteBomb = png "res/bomb-1.png"} : bs
 
-
- setTimerBomb :: Bombs -> Bombs
- setTimerBomb bombs = map explosionCountDown bombs
 
  explosionCountDown :: Bomb -> Bomb
  explosionCountDown bomb = bomb {timeTillExplosion = timeTillExplode}
@@ -111,7 +90,7 @@ module Model.GameObject where
  addExplosion pos = Explosion { explosionPosition = pos, explosionTime = 24, explosionRadius = 2, spriteExplosion = png "res/bomb-1.png"}
 
  setTimerExplosion :: Explosions -> Explosions
- setTimerExplosion ex = map explosionCountDown' ex
+ setTimerExplosion ex = filter (\ex -> explosionTime ex > 0) $ map explosionCountDown' ex
  
  explosionCountDown' :: Explosion -> Explosion
  explosionCountDown' ex = ex {explosionTime = timeTillExplode}

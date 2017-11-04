@@ -18,7 +18,8 @@ module Model.GameState where
         gen          :: StdGen,
         keyState     :: KeyState,
         enemies      :: [Player],
-        dynamics     :: Dynamics
+        bombs        :: [Bomb],
+        explosions   :: [Explosion]
     }
 
     instance Renderizable GameState where
@@ -28,13 +29,14 @@ module Model.GameState where
                   | otherwise = pictures pics
                   where pics = [ render $ player gs
                                          , pictures (map render (enemies gs) )
-                                         ,  (render (dynamics gs))]
+                                         , pictures (map render (bombs gs) )
+                                         , pictures (map render (explosions gs)) ]
 
     data CurrentState = Loading | Running | Paused | GameOver
             deriving(Show, Eq)    
 
     initGame :: GameState
-    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies initDynamics
+    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies [] []
 
 
     getRNumber :: IO Int
@@ -87,9 +89,10 @@ module Model.GameState where
 
                             
 
-    modDynamics :: GameState -> (Dynamics-> Dynamics) -> GameState
-    modDynamics gstate f = gstate {dynamics = f $ dynamics gstate}
+    modBombs:: GameState -> (Bombs -> Bombs) -> GameState
+    modBombs gstate f = gstate { bombs = f $ bombs gstate}                      
   
+
     modGrid :: GameState -> (Grid -> Grid) -> GameState
     modGrid gstate f = gstate { grid = f $ grid gstate}
   
@@ -97,18 +100,17 @@ module Model.GameState where
     modPlayer gstate f = gstate { player = f $ player gstate}
 
 
+    modifyDynamics :: GameState -> GameState
+    modifyDynamics gs | length newExplosions >0        = modifyGrid $ modifyPlayer modifyBombs
+                      | otherwise                      = modifyBombs
+            where modifyPlayer = \g -> modPlayer g $ checkCollisionBombs newExplosions
+                  modifyGrid = \g -> modGrid g $ checkDestructionBlocks newExplosions
+                  modifyBombs = gs {bombs = newBombs, explosions = newExplosions}
+                  (newBombs, newExplosions) = setTimerBombs (bombs gs) (explosions gs)
 
     --COLLISION DETECTION --
-    --BOMBS VS GRID--
+    --BOMBS VS GRID--    
 
-    
-    modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | length (explodingBombs gs)>0   = modifyGrid $ modifyPlayer $ modifyDynamicsBombs gs
-                      | otherwise                      = modifyDynamicsBombs gs
-            where modifyPlayer = \gs -> modPlayer gs $ checkCollisionBombs (explodingBombs gs)
-                  modifyGrid = \gs -> modGrid gs $ checkDestructionBlocks (explodingBombs gs)
-                  modifyDynamicsBombs = \gs -> modDynamics gs modifyBombs
-                  explodingBombs = \gs -> explosions $ dynamics gs
     
     checkDestructionBlocks :: Explosions -> Grid -> Grid
     checkDestructionBlocks ex grid = foldl checkDestruction grid ex
@@ -140,7 +142,7 @@ module Model.GameState where
     checkifMovePlayer :: GameState -> Player -> Player
     checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = newP
                             | otherwise                           = movePlayerInDir newP
-            where newP = checkCollisionBombs (explosions $ dynamics gs) p
+            where newP = checkCollisionBombs (explosions gs) p
 
 
     checkCollisionField :: Player -> Grid -> Bool
