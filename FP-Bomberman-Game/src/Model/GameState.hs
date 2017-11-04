@@ -63,20 +63,24 @@ module Model.GameState where
 
 
     checkCollision :: HasArea a => Player -> a -> Bool
-    checkCollision pl a = let (x,y) = getPos pl in
+    checkCollision pl a = let (x',y') = getPos pl 
+                              (x,y) = (x'+10, y'-10)
+                              (w,h) = (playerWidth, playerHeight) in
                           case playerDirection pl of
                                 North   | inArea a (x,y+1)
-                                            || inArea a (x+49,y+1) -> True
+                                            || inArea a (x+w,y+1) -> True
                                         | otherwise                         -> False
                                 East    | inArea a (x+50,y)
-                                            || inArea a (x+50,y-49) -> True
+                                            || inArea a (x+50,y-h) -> True
                                         | otherwise                         -> False
                                 South   | inArea a (x,y-50)
-                                            || inArea a (x+49,y-50) -> True
+                                            || inArea a (x+w,y-50) -> True
                                         | otherwise                         -> False
                                 West    | inArea a (x-1,y)
-                                            || inArea a (x-1,y-49) -> True
+                                            || inArea a (x-1,y-h) -> True
                                         | otherwise                         -> False
+
+                            
 
     modBombs :: GameState -> (Bombs-> Bombs) -> GameState
     modBombs gstate f = gstate {bombs = f $ bombs gstate}
