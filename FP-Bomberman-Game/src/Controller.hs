@@ -19,13 +19,14 @@ module Controller where
   step :: Float -> GameState -> IO GameState
   step secs gstate =
         do
-           let gs | currentState gstate == Loading  = setBreakableBlocks gstate
+           let gs | currentState gstate == Loading  = return gstate {currentState = Running} --setBreakableBlocks gstate
                   | currentState gstate == Paused   = undefined -- Show pause screen and disable movement
                   | currentState gstate == GameOver = undefined -- Show gameover screen
-                  | otherwise                       = return $ updateDynamics gstate 
+                  | otherwise                       = return $ updateDynamics gstate
            pureGs <- gs
+           let animateGs = modPlayer pureGs (animatePlayer)
            putStrLn( show $  player pureGs)
-           return pureGs
+           return animateGs
 
   updateDynamics:: GameState -> GameState
   updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer gstate
@@ -47,21 +48,24 @@ module Controller where
   -- Eerste opzet lopende player
   inputKey :: Event -> GameState -> GameState
   inputKey (EventKey c Down _ _) gstate
-    | c== SpecialKey KeyUp     = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
-    | c== SpecialKey KeyLeft   = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
-    | c== SpecialKey KeyDown   = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
-    | c== SpecialKey KeyRight  = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
+    | c== SpecialKey KeyUp     = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
+    | c== SpecialKey KeyLeft   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
+    | c== SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
+    | c== SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c== Char ','             = modBombs gstate $ addBomb (getGridPos $ player gstate)
-  inputKey (EventKey (SpecialKey _) Up _ _) gstate = gstate {keyState = Up}  
+  inputKey (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
   inputKey _ gstate = gstate
   
   setKeyState :: KeyState -> GameState -> GameState
   setKeyState k gstate = gstate { keyState = k}
 
+  setPlayerState :: PlayerState -> GameState -> GameState
+  setPlayerState pState gstate = gstate { player = p { state = pState } }
+                                    where p = player gstate
 
   
   checkIfPlayerIsAlive :: GameState -> GameState
-  checkIfPlayerIsAlive gs | state (player gs) == Alive  = gs
+  checkIfPlayerIsAlive gs | health (player gs) == Alive  = gs
                           | otherwise                   = gs { currentState = GameOver }
 
 

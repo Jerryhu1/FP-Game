@@ -37,7 +37,7 @@ drawGrid grid = pictures $ map drawBox grid
 drawBombs :: Bombs -> Picture
 drawBombs bombs = pictures $ map drawBombs bombs
     where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
-                          
+
 drawBomb :: Bomb -> Picture
 drawBomb b  | bombStatus b == UnExploded    = render b
             | bombStatus b == Exploding     = drawExplosion b
@@ -74,12 +74,7 @@ drawGrass = color green $ rectangleSolid blockSize blockSize
 drawPowerUp :: Picture
 drawPowerUp = color yellow $ rectangleSolid blockSize blockSize
 
-drawPlayer :: Player -> Picture
-drawPlayer p    | health p>0   = translate' (getPos p) $ color blue $  png "res/bomberman-idle.png"
-                | otherwise    = translate' (getPos p) $ color blue $ text "RIP"
-
 drawEnemy :: Player -> Picture
 drawEnemy p = translate' (getPos p) $ color (dark red) $ rectangleSolid blockSize blockSize
 
 
-    

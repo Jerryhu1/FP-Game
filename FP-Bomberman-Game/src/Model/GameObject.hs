@@ -49,9 +49,6 @@ module Model.GameObject where
                     Exploding  -> let r = fromIntegral $ explosionRadius b in
                                   translate' (getPos b) $ color (dark red) $ rectangleSolid (50*r) (50*r)
 
-
-
-
  addBomb :: Pos -> Bombs -> Bombs
  addBomb pos bs = Bomb {bombPosition = pos, bombStatus = UnExploded, explosionTime = 48, explosionRadius = 4, sprite = png "res/bomb-1.png"} : bs
 

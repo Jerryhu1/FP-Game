@@ -82,7 +82,7 @@ module Model.Grid where
         Field (-375, 375) Empty,
         Field (-325, 375) Empty,
         Field (-275, 375) Empty,
-        Field (-225, 375) Empty,
+        Field (-225, 375) StoneBlock,
         Field (-175, 375) Empty,
         Field (-125, 375) Empty,
         Field (-75, 375) Empty,

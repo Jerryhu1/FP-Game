@@ -87,6 +87,8 @@ module Model.GameState where
     modPlayer :: GameState -> (Player -> Player) -> GameState
     modPlayer gstate f = gstate { player = f $ player gstate}
 
+
+
     --COLLISION DETECTION --
     --BOMBS VS GRID--
 
@@ -118,7 +120,7 @@ module Model.GameState where
                                  | otherwise                     = checkCollisionBombs xs p
  
     playerCollisionBomb:: Player -> Player 
-    playerCollisionBomb pl = pl { health = (health pl) -1 }
+    playerCollisionBomb pl = pl { health = Dead}
 
 
 
