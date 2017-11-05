@@ -69,6 +69,7 @@ module Model.GameObject where
  }
 
  data ExplosionStatus = Moving | Destructed
+    deriving(Show, Eq) 
 
  type Explosions = [Explosion]
 
@@ -76,12 +77,11 @@ module Model.GameObject where
     getPos b = explosionPosition b
 
  instance HasArea Explosion where
-    width b = 49
-    height b = 49
-    inArea b (x,y) = (x1-r <= x && x <= x2+r && y2 <= y && y <= y1) || (x1 <= x && x <= x2 && y2-r <= y && y <= y1+r)
-            where   (x1,y1) = getPos b
-                    (x2,y2) = (x1+width b, y1-height b)
-                    r = 50
+    width f = 49
+    height f = 49
+    inArea f (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
+        where   (x1,y1) = getPos f
+                (x2,y2) = (x1+ width f,y1-height f-1)
 
  instance Renderizable Explosion where
     render b = translate' (getPos b) $ color (dark red) $ rectangleSolid 50 50
@@ -91,14 +91,17 @@ module Model.GameObject where
     setDir dir ex = ex {explosionDirection = dir}
     getDir ex = explosionDirection ex
 
+ setExplosionDestructed :: Explosion -> Explosion
+ setExplosionDestructed ex = ex {explosionStatus = Destructed }
+
  addExplosion :: Pos -> Explosions
  addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]]
 
  newEx :: Pos -> Direction -> Explosion
  newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 12, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
 
- moveExplosions:: Explosions -> Explosions
- moveExplosions = map moveExplosion
+ --moveExplosions:: Explosions -> Explosions
+ --moveExplosions = map moveExplosion
 
  moveExplosion:: Explosion -> Explosion
  moveExplosion ex = let (x,y) = getPos ex in

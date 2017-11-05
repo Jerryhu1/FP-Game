@@ -119,18 +119,17 @@ module Model.GameState where
 
 
     modOldExplosions :: Grid -> Explosions -> (Explosions,Grid)
-    modOldExplosions gr explosions = let destructingExplosions = filter (\ex -> checkCollisionEx ex gr) explosions
-                                         movingExplosions = moveExplosions $ filter (\ex -> not $ checkCollisionEx ex gr) explosions
-                                         newGrid = foldl checkDestruction gr destructingExplosions
-                                         newExplosions = setTimerExplosion movingExplosions in
+    modOldExplosions gr explosions = let newGrid = foldl checkDestruction gr newExplosions
+                                         newExplosions = setTimerExplosion $ map (checkCollisionEx gr) explosions in
                                   (newExplosions, newGrid)
     
 
 
-    checkCollisionEx :: Explosion -> Grid -> Bool
-    checkCollisionEx _ []     = False
-    checkCollisionEx ex (x:xs) | checkCollision ex x       = True
-                               | otherwise                 = checkCollisionEx ex xs
+    checkCollisionEx :: Grid -> Explosion -> Explosion
+    checkCollisionEx [] ex     = moveExplosion ex
+    checkCollisionEx (x:xs) ex | checkCollision ex x && explosionStatus ex == Destructed     = ex
+                               | checkCollision ex x  = setExplosionDestructed $ moveExplosion ex
+                               | otherwise                 = checkCollisionEx xs ex
 
     
 
