@@ -69,11 +69,10 @@ module Model.GameState where
                 where pos = fieldPosition f                          
 
 
-    checkCollision :: HasArea a => Player -> a -> Bool
-    checkCollision pl a = let (x',y') = getPos pl 
-                              (x,y) = (x'+10, y'-10)
-                              (w,h) = (playerWidth, playerHeight) in
-                          case playerDirection pl of
+    checkCollision :: (HasArea a, Movable b) => b -> a -> Bool
+    checkCollision pl a = let (x,y) = getPos pl 
+                              (w,h) = (width pl, height pl) in
+                          case getDir pl of
                                 North   | inArea a (x,y+1)
                                             || inArea a (x+w,y+1) -> True
                                         | otherwise                         -> False
@@ -101,19 +100,46 @@ module Model.GameState where
 
 
     modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | length newExplosions >0        = modifyGrid $ modifyPlayer modifyBombs
+    modifyDynamics gs | length explosionsTot >0        = modifyPlayer modifyBombs
                       | otherwise                      = modifyBombs
-            where modifyPlayer = \g -> modPlayer g $ checkCollisionBombs newExplosions
-                  modifyGrid = \g -> modGrid g $ checkDestructionBlocks newExplosions
-                  modifyBombs = gs {bombs = newBombs, explosions = newExplosions}
-                  (newBombs, newExplosions) = setTimerBombs (bombs gs) (explosions gs)
+            where modifyPlayer = \g -> modPlayer g $ checkCollisionBombs explosionsTot
+                  modifyBombs = gs {grid = newGrid, bombs = newBombs, explosions = explosionsTot}
+                  (newBombs, newExplosions) = setTimerBombs (bombs gs)
+                  (newOldExplosions, newGrid) = modOldExplosions (grid gs) (explosions gs)
+                  explosionsTot = newExplosions ++ newOldExplosions
+
+                  
+    setTimerBombs :: Bombs -> (Bombs,Explosions)
+    setTimerBombs bombs = let      setTimers = map explosionCountDown bombs
+                                   newBombs = filter (\b -> timeTillExplosion b > 0) setTimers
+                                   explodingBombs = filter (\b -> timeTillExplosion b == 0) setTimers
+                                   newExplosions = makeExplosions explodingBombs in
+                          (newBombs, newExplosions)
+
+
+
+    modOldExplosions :: Grid -> Explosions -> (Explosions,Grid)
+    modOldExplosions gr explosions = let destructingExplosions = filter (\ex -> checkCollisionEx ex gr) explosions
+                                         movingExplosions = moveExplosions $ filter (\ex -> not $ checkCollisionEx ex gr) explosions
+                                         newGrid = foldl checkDestruction gr destructingExplosions
+                                         newExplosions = setTimerExplosion movingExplosions in
+                                  (newExplosions, newGrid)
+    
+
+
+    checkCollisionEx :: Explosion -> Grid -> Bool
+    checkCollisionEx _ []     = False
+    checkCollisionEx ex (x:xs) | checkCollision ex x       = True
+                               | otherwise                 = checkCollisionEx ex xs
+
+    
 
     --COLLISION DETECTION --
     --BOMBS VS GRID--    
 
     
-    checkDestructionBlocks :: Explosions -> Grid -> Grid
-    checkDestructionBlocks ex grid = foldl checkDestruction grid ex
+ --   checkDestructionBlocks :: Explosions -> Grid -> Grid
+ --   checkDestructionBlocks ex grid = foldl checkDestruction grid ex
 
     checkDestruction :: Grid -> Explosion -> Grid
     checkDestruction [] b = []

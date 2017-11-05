@@ -8,14 +8,16 @@ class Positioned a where
     getPos :: a -> Pos
 
 
-
-class Movable a where
+class HasArea a => Movable a where
     setPos :: Pos -> a -> a
     setDir :: Direction -> a -> a
+    getDir :: a -> Direction
 
 
-class HasArea a where
+class Positioned a => HasArea a where
     inArea :: a -> Pos -> Bool
+    width :: a -> Int
+    height :: a -> Int
 
 (+.) :: Pos -> Pos -> Pos
 (+.) (x,y) (x',y') = (x+x',y+y')

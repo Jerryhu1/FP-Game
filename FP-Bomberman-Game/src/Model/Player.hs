@@ -32,6 +32,7 @@ instance Positioned Player where
 instance Movable Player where
     setPos pos player = player { playerPosition = pos }
     setDir dir player = player { playerDirection = dir}
+    getDir player = playerDirection player
 
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p
@@ -39,20 +40,22 @@ instance Show Player where
                             ++ " Direction: " ++ show (playerDirection p)
                             ++ " State: " ++ show (state p)
 
-
+instance HasArea Player where
+    width p = 29
+    height p = 29
+    inArea p (x,y) = let (x1,y1) = getPos p
+                         (x2,y2) = (x1+width p, y1-height p)
+                     in x1 <= x && x <= x2 && y2 <= y && y <= y1
+                     
 instance Renderizable Player where
-    render p | health p == Alive && state p == Idle   = translate' (getPos p) $ playerIdlePictures p
-             | health p == Alive && state p  == Walking = translate' (getPos p) $ sprite p
-             | otherwise    = translate' (getPos p) $ color blue $ text "RIP"
+    render p | health p == Alive && state p == Idle   = translate' newPos $ playerIdlePictures p
+             | health p == Alive && state p  == Walking = translate' newPos $ sprite p
+             | otherwise    = translate' newPos $ color blue $ text "RIP"
+             where newPos = (+.) (0,10) $ getPos p
 
 initPlayer :: Player
-initPlayer = Player "Jerry" Alive (-375,375) 10 West (0,0) Idle (png "res/bomberman-idle.png")
+initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png")
 
-playerWidth :: Int
-playerWidth = 29
-
-playerHeight :: Int
-playerHeight = 29
 
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje" Alive (225,125) 5 South (225, 75) Idle (png "res/bomberman-idle.png"),

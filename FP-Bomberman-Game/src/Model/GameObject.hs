@@ -19,15 +19,10 @@ module Model.GameObject where
         render PowerUp    = undefined
 
 
- setTimerBombs :: Bombs -> Explosions -> (Bombs,Explosions)
- setTimerBombs bombs ex = let   setTimers = map explosionCountDown bombs
-                                newBombs = filter (\b -> timeTillExplosion b > 0) setTimers
-                                explodingBombs = filter (\b -> timeTillExplosion b == 0) setTimers
-                                newExplosions = makeExplosions explodingBombs ++ setTimerExplosion ex in
-                          (newBombs, newExplosions)
+
 
  makeExplosions :: Bombs -> Explosions
- makeExplosions bs = map (\x -> addExplosion $ getPos x) bs
+ makeExplosions bs = concat $ map (\x -> addExplosion $ getPos x) bs
 
 
 
@@ -45,9 +40,11 @@ module Model.GameObject where
     getPos b = bombPosition b
 
  instance HasArea Bomb where
+    width b = 49
+    height b = 49
     inArea b (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
         where   (x1,y1) = getPos b
-                (x2,y2) = (+.) (x1,y1) (49, -49)
+                (x2,y2) = (x1+width b,y1-height b)
 
  instance Renderizable Bomb where
     render b = translate' (getPos b) (spriteBomb b)                    
@@ -66,10 +63,12 @@ module Model.GameObject where
  data Explosion = Explosion {
     explosionPosition :: Pos,
     explosionTime :: Float,
-    explosionRadius :: Int,
+    explosionStatus :: ExplosionStatus,
+    explosionDirection :: Direction,
     spriteExplosion :: Picture
  }
 
+ data ExplosionStatus = Moving | Destructed
 
  type Explosions = [Explosion]
 
@@ -77,17 +76,37 @@ module Model.GameObject where
     getPos b = explosionPosition b
 
  instance HasArea Explosion where
+    width b = 49
+    height b = 49
     inArea b (x,y) = (x1-r <= x && x <= x2+r && y2 <= y && y <= y1) || (x1 <= x && x <= x2 && y2-r <= y && y <= y1+r)
             where   (x1,y1) = getPos b
-                    (x2,y2) = (+.) (x1,y1) (49, -49)
-                    r = 50 * explosionRadius b
+                    (x2,y2) = (x1+width b, y1-height b)
+                    r = 50
 
  instance Renderizable Explosion where
-    render b = let r = fromIntegral $ explosionRadius b in
-            translate' (getPos b) $ color (dark red) $ rectangleSolid (50*r) (50*r)
+    render b = translate' (getPos b) $ color (dark red) $ rectangleSolid 50 50
 
- addExplosion :: Pos -> Explosion
- addExplosion pos = Explosion { explosionPosition = pos, explosionTime = 24, explosionRadius = 2, spriteExplosion = png "res/bomb-1.png"}
+ instance Movable Explosion where
+    setPos pos ex = ex {explosionPosition = pos}
+    setDir dir ex = ex {explosionDirection = dir}
+    getDir ex = explosionDirection ex
+
+ addExplosion :: Pos -> Explosions
+ addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]]
+
+ newEx :: Pos -> Direction -> Explosion
+ newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 12, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
+
+ moveExplosions:: Explosions -> Explosions
+ moveExplosions = map moveExplosion
+
+ moveExplosion:: Explosion -> Explosion
+ moveExplosion ex = let (x,y) = getPos ex in
+                    case getDir ex of 
+                        North -> setPos (x,y+5) ex
+                        East -> setPos (5+x,y) ex
+                        South -> setPos (x,y-5) ex
+                        West -> setPos (x-5,y) ex
 
  setTimerExplosion :: Explosions -> Explosions
  setTimerExplosion ex = filter (\ex -> explosionTime ex > 0) $ map explosionCountDown' ex
