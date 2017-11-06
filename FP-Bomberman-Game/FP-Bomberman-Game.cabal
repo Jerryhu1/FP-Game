@@ -28,6 +28,7 @@ executable FP-Bomberman-Game-exe
                        gloss-game,
                        aeson,
                        random,
+                       bytestring,
                        FP-Bomberman-Game
   default-language:    Haskell2010
 

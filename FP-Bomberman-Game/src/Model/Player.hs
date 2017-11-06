@@ -6,7 +6,6 @@ import Data.List
 
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
-
 import Model.Grid
 
 
