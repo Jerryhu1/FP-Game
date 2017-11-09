@@ -16,15 +16,17 @@ moveEnemy gs enemy | (goal enemy) /= (getPos enemy) && not (checkCollisionField 
                    | otherwise
                         = modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
 
+-- Sets a new goal for a given player / enemy
 setNewGoal :: GameState -> Player -> Player
 setNewGoal gs e = e { goal = newGoal, playerDirection = getDirectionFromPos e newGoal  }
                   where newGoal = getPath gs e
 
-
+-- If there is a collision set a goal based on current position
 setNewGoalWhenCollision :: GameState -> Player -> Player
 setNewGoalWhenCollision gs e = e { goal = newGoal, playerDirection = getDirectionFromPos e newGoal  }
                   where newGoal = getPathWhenCollision gs e
 
+-- Move the player/enemy to a position and change it's direction
 moveEnemyToPos :: GameState -> Player -> Pos -> GameState
 moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changePlayerDir gs (getDirectionFromPos enemy pos)
                         

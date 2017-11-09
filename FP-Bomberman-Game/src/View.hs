@@ -37,7 +37,7 @@ drawGrid grid = pictures $ map drawBox grid
 
 drawBombs :: Bombs -> Picture
 drawBombs bombs = pictures $ map drawBombs bombs
-    where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
+                    where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
 
 drawBomb :: Bomb -> Picture
 drawBomb b = render b
@@ -50,7 +50,6 @@ setPosToPixels :: Pos -> Pos
 setPosToPixels p = ((-375+xPos ),(375- yPos ))
                         where xPos = fst p
                               yPos = snd p
-
 
 drawBG :: Picture
 drawBG = translate' (-25, 75) $ png "res/bg.png"

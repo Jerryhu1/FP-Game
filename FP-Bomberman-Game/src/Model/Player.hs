@@ -19,7 +19,6 @@ data Player = Player {
             goal :: Pos,
             state :: PlayerState,
             sprite :: Picture
-
         }deriving(Eq)
 
 data PlayerState = Walking | Idle | Hit deriving (Eq, Show)
@@ -48,10 +47,10 @@ instance HasArea Player where
                      in x1 <= x && x <= x2 && y2 <= y && y <= y1
                      
 instance Renderizable Player where
-    render p | health p == Alive && state p == Idle   = translate' newPos $ playerIdlePictures p
+    render p | health p == Alive && state p == Idle     = translate' newPos $ playerIdlePictures p
              | health p == Alive && state p  == Walking = translate' newPos $ sprite p
-             | otherwise    = translate' newPos $ color blue $ text "RIP"
-             where newPos = (+.) (0,10) $ getPos p
+             | otherwise                                = translate' newPos $ color blue $ text "RIP"
+                where newPos = (+.) (0,10) $ getPos p
 
 initPlayer :: Player
 initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png")
@@ -71,25 +70,27 @@ movePlayerInDir player' = case playerDirection player' of
 --move player given a new 
 calcNewPos :: Pos -> Player -> Pos
 calcNewPos pos player' = getBound posTimesVel $ getPos player'
-    where posTimesVel = (*.) pos (* (velocity player'))
+                         where posTimesVel = (*.) pos (* (velocity player'))
 
-
+-- Get the boundaries of a given position
 getBound :: Pos -> Pos -> Pos
 getBound (x,y) (x',y') = (newX, newY)
     where newX = max (-375) $ min 375 $ x+x'
           newY = max (-225) $ min 375 $ y+y'
-    
+
 getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
             f = \x -> x - ((x-25) `mod` fieldSize)
 
+-- Returns a list of pictures that represent a walking direction
 playerWalkingPictures :: Player -> [Picture]
 playerWalkingPictures p | playerDirection p == North  = [png "res/bomberman-walk-up-1.png", png "res/bomberman-walk-up-2.png"]
                 | playerDirection p == South  = [png "res/bomberman-walk-down-1.png", png "res/bomberman-walk-down-2.png"]
                 | playerDirection p == West  =  [png "res/bomberman-walk-left-1.png", png "res/bomberman-walk-left-2.png"]
                 | otherwise                   = [png "res/bomberman-walk-right-1.png", png "res/bomberman-walk-right-2.png"]
 
+-- Returns a Picture based on the direction of the player that is idle
 playerIdlePictures :: Player -> Picture
 playerIdlePictures p
                 | playerDirection p == North  = png "res/bomberman-idle-up.png"
