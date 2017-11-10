@@ -26,15 +26,16 @@ type Enemies = [Player]
 
 instance Renderizable GameState where
     render gs
-              | currentState gs == Paused = pictures (png "res/pause-screen.png" : pics)
-              | currentState gs == GameOver = pictures (png "res/lose-screen.png" : pics)
+              | currentState gs == Paused   = pictures (pics ++ [png "res/pause-screen.png"] )
+              | currentState gs == GameOver = pictures (pics ++ [png "res/lose-screen.png"])
+              | currentState gs == Victory  = pictures (pics ++ [png "res/victory-screen.png"])
               | otherwise = pictures pics
               where pics = [ render $ player gs
                              , pictures (map render (enemies gs) )
                              , pictures (map render (bombs gs) )
                              , pictures (map render (explosions gs)) ]
 
-data CurrentState = Loading | Running | Paused | GameOver
+data CurrentState = Loading | Running | Paused | GameOver | Victory
         deriving(Show, Eq)
 
 initGame :: GameState
@@ -98,9 +99,12 @@ modGrid gstate f = gstate { grid = f $ grid gstate}
 modPlayer :: GameState -> (Player -> Player) -> GameState
 modPlayer gstate f = gstate { player = f $ player gstate}
 
+modEnemies :: GameState -> (Player -> Player) -> GameState
+modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
+
 modifyDynamics :: GameState -> GameState
-modifyDynamics gs | length explosionsTot >0        = modifyPlayer modifyBombs
-                  | otherwise                      = modifyBombs
+modifyDynamics gs | length explosionsTot > 0        = modifyPlayer modifyBombs
+                  | otherwise                       = modifyBombs
                 where modifyPlayer = \g -> modPlayer g $ checkCollisionBombs explosionsTot
                       modifyBombs = gs {grid = newGrid, bombs = newBombs, explosions = explosionsTot}
                       (newBombs, newExplosions) = setTimerBombs (bombs gs)
@@ -148,15 +152,20 @@ checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = 
 
 
 --BOMBS VS PLAYER--
-checkCollisionBombs :: Explosions -> Player -> Player
+checkCollisionBombs :: Explosions -> a -> a
 checkCollisionBombs [] p     = p
-checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ playerCollisionBomb p
+checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ setPlayerDead p
                              | otherwise                     = checkCollisionBombs xs p
 
-playerCollisionBomb:: Player -> Player
-playerCollisionBomb pl = pl { health = Dead}
+setPlayerDead :: Player -> Player
+setPlayerDead pl = pl { state = Dying}
 
 
+--ENEMIES VS PLAYER--
+checkCollisionEnemies :: [Player] -> Player -> Player
+checkCollisionEnemies [] p = p
+checkCollisionEnemies (x:xs) p | checkCollision p x     = checkCollisionEnemies xs $ setPlayerDead p
+                              | otherwise               = checkCollisionEnemies xs p
 
 --PLAYERS VS GRID--
 --change the direction in which the player is positioned and possibly move player in that direction
@@ -166,15 +175,13 @@ changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir playe
 checkifMovePlayer :: GameState -> Player -> Player
 checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = newP
                         | otherwise                           = movePlayerInDir newP
-        where newP = checkCollisionBombs (explosions gs) p
+        where newP = checkCollisionBombs (explosions gs) $ checkCollisionPlayer (enemies gs) p
 
 
 checkCollisionField :: Player -> Grid -> Bool
 checkCollisionField _ []     = False
 checkCollisionField p (x:xs)  | gameObject x /= Empty &&  gameObject x /= PowerUp && checkCollision p x  = True
                               | otherwise                 = checkCollisionField p xs
-
-
 
 
 

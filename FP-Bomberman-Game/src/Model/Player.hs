@@ -21,7 +21,7 @@ data Player = Player {
             sprite :: Picture
         }deriving(Eq)
 
-data PlayerState = Walking | Idle | Hit deriving (Eq, Show)
+data PlayerState = Walking | Idle | Dying deriving (Eq, Show)
 data Health = Dead | Alive deriving (Eq, Show)
 
 instance Positioned Player where
@@ -47,9 +47,10 @@ instance HasArea Player where
                      in x1 <= x && x <= x2 && y2 <= y && y <= y1
                      
 instance Renderizable Player where
-    render p | health p == Alive && state p == Idle     = translate' newPos $ playerIdlePictures p
-             | health p == Alive && state p  == Walking = translate' newPos $ sprite p
-             | otherwise                                = translate' newPos $ color blue $ text "RIP"
+    render p | health p == Alive && state p == Idle    = translate' newPos $ playerIdlePictures p
+             | health p == Alive && state p == Walking = translate' newPos $ sprite p
+             | health p == Alive && state p == Dying   = translate' (getPos p) $ sprite p
+             | otherwise                               = blank
                 where newPos = (+.) (0,10) $ getPos p
 
 initPlayer :: Player
@@ -57,8 +58,7 @@ initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomber
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (225,125) 5 South (225, 75) Idle (png "res/bomberman-idle.png"),
-               Player "Monstertje2" Alive (325,-225) 5 East (325, -175) Idle (png "res/bomberman-idle.png")]
+initEnemies = [Player "Monstertje" Alive (-350,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -85,7 +85,8 @@ getGridPos p = (*.) midPosPlayer f
 
 -- Returns a list of pictures that represent a walking direction
 playerWalkingPictures :: Player -> [Picture]
-playerWalkingPictures p | playerDirection p == North  = [png "res/bomberman-walk-up-1.png", png "res/bomberman-walk-up-2.png"]
+playerWalkingPictures p
+                | playerDirection p == North  = [png "res/bomberman-walk-up-1.png", png "res/bomberman-walk-up-2.png"]
                 | playerDirection p == South  = [png "res/bomberman-walk-down-1.png", png "res/bomberman-walk-down-2.png"]
                 | playerDirection p == West  =  [png "res/bomberman-walk-left-1.png", png "res/bomberman-walk-left-2.png"]
                 | otherwise                   = [png "res/bomberman-walk-right-1.png", png "res/bomberman-walk-right-2.png"]
@@ -98,11 +99,31 @@ playerIdlePictures p
                 | playerDirection p == West  =  png "res/bomberman-idle-left-1.png"
                 | otherwise                   = png "res/bomberman-idle-right-1.png"
 
+playerDyingPictures :: Player -> [Picture]
+playerDyingPictures p = [png "res/bomberman-dying-1.png", png "res/bomberman-dying-2.png",
+                         png "res/bomberman-dying-3.png", png "res/bomberman-dying-4.png",
+                         png "res/bomberman-dying-5.png", png "res/bomberman-dying-6.png",
+                         png "res/bomberman-dying-7.png"]
+
 -- Checks if the current picture is equal to any inside the list, and takes a different one if so
 animatePlayer :: Player -> Player
-animatePlayer p  | isJust $ currentPic = if fromJust (currentPic) == 1
-                                         then p { sprite = (playerWalkingPictures p !! 0) }
-                                         else  p { sprite = (playerWalkingPictures p !! 1) }
-                 | otherwise = p {sprite = head $ playerWalkingPictures p }
-                   where dir = playerDirection p
-                         currentPic = elemIndex (sprite p) (playerWalkingPictures p)
+animatePlayer p  | state p == Walking = animateWalkingPlayer p
+                 | state p == Dying   = animateDyingPlayer p
+                 | otherwise          = p
+
+animateWalkingPlayer :: Player -> Player
+animateWalkingPlayer p | isJust $ currentPic =
+                                if fromJust (currentPic) == 1
+                                then p { sprite = (playerWalkingPictures p !! 0) }
+                                else  p { sprite = (playerWalkingPictures p !! 1) }
+                       | otherwise = p {sprite = head $ playerWalkingPictures p }
+                            where dir = playerDirection p
+                                  currentPic = elemIndex (sprite p) (playerWalkingPictures p)
+
+animateDyingPlayer :: Player -> Player
+animateDyingPlayer p | isNothing currentPicIndex                   = p { sprite = head (playerDyingPictures p)}
+                     | fromJust currentPicIndex == frameAmount - 1 = p { sprite = blank, health = Dead }
+                     | otherwise                                   = p {  sprite = nextPicture }
+                    where frameAmount      = length $ playerDyingPictures p
+                          currentPicIndex  = elemIndex (sprite p) (playerDyingPictures p)
+                          nextPicture      = (playerDyingPictures p) !! (fromJust currentPicIndex + 1)

@@ -19,17 +19,16 @@ step :: Float -> GameState -> IO GameState
 step secs gstate = return $ handleAnimation $ handleGameState gstate
 
 handleGameState :: GameState -> GameState
-handleGameState gstate   | currentState gstate == Loading  = gstate {currentState = Running} --setBreakableBlocks gstate
-                         | currentState gstate == Paused   = gstate -- Show pause screen and disable movement
-                         | currentState gstate == GameOver = gstate -- Show gameover screen
-                         | otherwise                       = updateDynamics gstate
+handleGameState gstate   | currentState gstate == Loading   = gstate {currentState = Running} --setBreakableBlocks gstate
+                         | currentState gstate == Running   = updateDynamics gstate
+                         | otherwise                        = gstate
 
 handleAnimation :: GameState -> GameState
-handleAnimation gstate = checkIfPlayerIsAlive $ modPlayer gstate (animatePlayer) $ map modPlayer gstate
+handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
 
 updateDynamics:: GameState -> GameState
 updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer gstate
-                    | otherwise                 = update gstate
+                      | otherwise                 = update gstate
       where update = moveEnemies . createRandomness . modifyDynamics
             createRandomness = \gs ->  snd $ withRandom (randomR (0,3)) gs
             moveEnemies = \gs -> foldl moveEnemy gs (enemies gs)
@@ -53,15 +52,18 @@ inputKey (EventKey c Down _ _) gstate
     | c == SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c == SpecialKey KeyEsc    = gstate { currentState = Paused }
     | c == Char ','             = modBombs gstate $ addBombs (getGridPos $ player gstate)
+
 inputKey (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
 inputKey _ gstate = gstate
 
 handleInput :: Event -> GameState -> GameState
-handleInput ev gs | currentState gs == Running = inputKey ev gs
-                | currentState gs == Paused = inputKeyPaused ev gs
-                | currentState gs == GameOver = inputKeyMenu ev gs
-                | otherwise                 = gs
-
+handleInput ev gs
+                | currentState gs == Running && playerState /= Dying = inputKey ev gs
+                | currentState gs == Paused                          = inputKeyPaused ev gs
+                | currentState gs == GameOver                        = inputKeyMenu ev gs
+                | currentState gs == Victory                         = inputKeyVictory ev gs
+                | otherwise                                          = gs
+                    where playerState = state $ player gs
 inputKeyPaused :: Event -> GameState -> GameState
 inputKeyPaused (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc        = gstate { currentState = Running }
@@ -74,6 +76,12 @@ inputKeyMenu (EventKey c Down _ _) gstate
                 | c == Char 'n'       = error "Much noob very wow"
 inputKeyMenu _ gstate = gstate
 
+inputKeyVictory :: Event -> GameState -> GameState
+inputKeyVictory (EventKey c Down _ _) gstate
+                | c == SpecialKey KeyEsc       = undefined
+                | c == SpecialKey KeySpace     = initGame
+inputKeyVictory _ gstate = gstate
+
 setKeyState :: KeyState -> GameState -> GameState
 setKeyState k gstate = gstate { keyState = k}
 
@@ -85,6 +93,8 @@ checkIfPlayerIsAlive :: GameState -> GameState
 checkIfPlayerIsAlive gs | health (player gs) == Alive  = gs
                         | otherwise                    = gs { currentState = GameOver }
 
-
-
+checkPlayerVictory :: GameState -> GameState
+checkPlayerVictory gs | allDead     = gs { currentState = Victory }
+                      | otherwise   = gs
+            where allDead = all ( == Dead) (map health (enemies gs))
 

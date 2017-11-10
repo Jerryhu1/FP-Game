@@ -9,7 +9,8 @@ import System.Random
 
 -- Moves randomly through positions
 moveEnemy :: GameState -> Player -> GameState
-moveEnemy gs enemy | (goal enemy) /= (getPos enemy) && not (checkCollisionField enemy (grid gs) )
+moveEnemy gs enemy | state enemy == Dying = gs
+                   | (goal enemy) /= (getPos enemy) && not (checkCollisionField enemy (grid gs) )
                         = moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
                    | (goal enemy) /= (getPos enemy) && checkCollisionField enemy (grid gs)
                         = modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
