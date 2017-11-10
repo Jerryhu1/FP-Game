@@ -152,7 +152,7 @@ checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = 
 
 
 --BOMBS VS PLAYER--
-checkCollisionBombs :: Explosions -> a -> a
+checkCollisionBombs :: Explosions -> Player -> Player
 checkCollisionBombs [] p     = p
 checkCollisionBombs (x:xs) p | checkCollision p x            = checkCollisionBombs xs $ setPlayerDead p
                              | otherwise                     = checkCollisionBombs xs p
@@ -175,7 +175,7 @@ changePlayerDir gstate dir player' = checkifMovePlayer gstate $ setDir dir playe
 checkifMovePlayer :: GameState -> Player -> Player
 checkifMovePlayer gs p  | checkCollisionField p $ grid gs     = newP
                         | otherwise                           = movePlayerInDir newP
-        where newP = checkCollisionBombs (explosions gs) $ checkCollisionPlayer (enemies gs) p
+        where newP = checkCollisionBombs (explosions gs) $ checkCollisionEnemies (enemies gs) p
 
 
 checkCollisionField :: Player -> Grid -> Bool
