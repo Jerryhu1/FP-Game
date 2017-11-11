@@ -1,14 +1,10 @@
 TO-DO
 
-- Bomb explosions
-- Breaking blocks by explosion
-- Game over by death by explosion, or enemy
 - Victory by killing all enemies
-- Initial blocks should not block enemies or players
 - High scores
 - Enemies AI
 - Animations
-- Pause screen
+
 
 Extra's
 
@@ -18,4 +14,9 @@ Extra's
 
 Done:
 
-- Random seed generation 
+- Random seed generation
+- Breaking blocks by explosion
+- Bomb explosions
+- Game over by death by explosion, or enemy
+- Pause screen
+- Initial blocks should not block enemies or players

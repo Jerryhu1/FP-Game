@@ -36,9 +36,6 @@ updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ 
             --zie functie modPlayer
             --is er geen andere manier om randomness te maken?
 
-printCollision :: GameState -> String
-printCollision gs = show $ checkCollisionField (player gs) (grid gs)
-
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
 input e gstate = return (handleInput e gstate)
@@ -97,4 +94,8 @@ checkPlayerVictory :: GameState -> GameState
 checkPlayerVictory gs | allDead     = gs { currentState = Victory }
                       | otherwise   = gs
             where allDead = all ( == Dead) (map health (enemies gs))
+
+checkIfEnemiesLeft :: GameState -> GameState
+checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
+                    | otherwise                         = gs { currentState = GameOver}
 

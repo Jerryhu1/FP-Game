@@ -58,9 +58,9 @@ initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomber
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (325,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
+initEnemies = [Player "Monstertje" Alive (375,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
 
---if no collision occures, move player in the direction he is facing
+--if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
 movePlayerInDir player' = case playerDirection player' of
                                 West -> setPos (calcNewPos (-1,0) player') player'
@@ -70,7 +70,8 @@ movePlayerInDir player' = case playerDirection player' of
 --move player given a new 
 calcNewPos :: Pos -> Player -> Pos
 calcNewPos pos player' = getBound posTimesVel $ getPos player'
-                         where posTimesVel = (*.) pos (* (velocity player'))
+                         where posTimesVel = (*.) pos (* (min 30 $ velocity player'))
+                               
 
 -- Get the boundaries of a given position
 getBound :: Pos -> Pos -> Pos
