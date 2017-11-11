@@ -73,7 +73,7 @@ instance HasArea Explosion where
     height f  = 49
     inArea f (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
         where   (x1,y1) = getPos f
-                (x2,y2) = (x1+ width f,y1-height f-1)
+                (x2,y2) = (x1+ width f,y1-height f)
 
 instance Renderizable Explosion where
     render b = translate' (getPos b) $ color (dark red) $ rectangleSolid 50 50

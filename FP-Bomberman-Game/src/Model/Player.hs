@@ -41,7 +41,7 @@ instance Show Player where
 
 instance HasArea Player where
     width p = 29
-    height p = 29
+    height p = 39
     inArea p (x,y) = let (x1,y1) = getPos p
                          (x2,y2) = (x1+width p, y1-height p)
                      in x1 <= x && x <= x2 && y2 <= y && y <= y1
@@ -51,14 +51,14 @@ instance Renderizable Player where
              | health p == Alive && state p == Walking = translate' newPos $ sprite p
              | health p == Alive && state p == Dying   = translate' (getPos p) $ sprite p
              | otherwise                               = blank
-                where newPos = (+.) (0,10) $ getPos p
+                where newPos = (+.) (-5,15) $ getPos p
 
 initPlayer :: Player
 initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png")
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (-350,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
+initEnemies = [Player "Monstertje" Alive (325,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
 
 --if no collision occures, move player in the direction he is facing
 movePlayerInDir :: Player -> Player

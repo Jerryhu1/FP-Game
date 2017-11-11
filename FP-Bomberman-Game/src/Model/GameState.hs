@@ -122,7 +122,7 @@ setTimerBombs bombs = let      setTimers = map explosionCountDown bombs
 
 
 modOldExplosions :: Grid -> Explosions -> (Explosions,Grid)
-modOldExplosions gr explosions = let newGrid = foldl checkDestruction gr newExplosions
+modOldExplosions gr explosions = let newGrid = foldl checkDestruction gr explosions
                                      newExplosions = setTimerExplosion $ map (checkCollisionEx gr) explosions in
                               (newExplosions, newGrid)
 
@@ -145,7 +145,7 @@ checkCollisionEx (x:xs) ex | checkCollision ex x && explosionStatus ex == Destru
 
 checkDestruction :: Grid -> Explosion -> Grid
 checkDestruction [] b = []
-checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = checkDestruction xs b
+checkDestruction (x:xs) b | gameObject x == StoneBlock && checkCollision b x && explosionStatus b == Moving = checkDestruction xs b
                           | otherwise                                         = x : checkDestruction xs b
 
 
