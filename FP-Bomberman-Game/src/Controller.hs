@@ -9,6 +9,7 @@ import Model.Grid
 import Model.EnemyLogic
 import Model.Random
 import Model.GameObject
+import Model.Log
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
@@ -16,12 +17,16 @@ import System.Random
 
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
-step secs gstate = return $ handleAnimation $ handleGameState gstate
+step secs gstate = do
+                        gs <- handleGameState gstate
+                        return $ handleAnimation gs
 
-handleGameState :: GameState -> GameState
-handleGameState gstate   | currentState gstate == Loading   = gstate {currentState = Running} --setBreakableBlocks gstate
-                         | currentState gstate == Running   = updateDynamics gstate
-                         | otherwise                        = gstate
+
+handleGameState :: GameState -> IO GameState
+handleGameState gstate   | currentState gstate == Loading   = return $ gstate {currentState = Running} --setBreakableBlocks gstate
+                         | currentState gstate == Running   = return $ updateDynamics $ updateElapsedTime gstate
+                         | otherwise                        = do writeNewHighScore $ calculateScore gstate
+                                                                 return gstate
 
 handleAnimation :: GameState -> GameState
 handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
@@ -41,26 +46,26 @@ input :: Event -> GameState -> IO GameState
 input e gstate = return (handleInput e gstate)
 
 -- Eerste opzet lopende player
-inputKey :: Event -> GameState -> GameState
-inputKey (EventKey c Down _ _) gstate
+inputKeyRunning :: Event -> GameState -> GameState
+inputKeyRunning (EventKey c Down _ _) gstate
     | c == SpecialKey KeyUp     = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
     | c == SpecialKey KeyLeft   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
     | c == SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
     | c == SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c == SpecialKey KeyEsc    = gstate { currentState = Paused }
-    | c == Char ','             = modBombs gstate $ addBombs (getGridPos $ player gstate)
-
-inputKey (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
-inputKey _ gstate = gstate
+    | c == Char ',' = modBombs gstate $ addBombs (getGridPos $ player gstate)
+inputKeyRunning (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
+inputKeyRunning _ gstate = gstate
 
 handleInput :: Event -> GameState -> GameState
 handleInput ev gs
-                | currentState gs == Running && playerState /= Dying = inputKey ev gs
-                | currentState gs == Paused                          = inputKeyPaused ev gs
-                | currentState gs == GameOver                        = inputKeyMenu ev gs
-                | currentState gs == Victory                         = inputKeyVictory ev gs
-                | otherwise                                          = gs
-                    where playerState = state $ player gs
+        | currentState gs == Running && playerState /= Dying = inputKeyRunning ev gs
+        | currentState gs == Paused                          = inputKeyPaused ev gs
+        | currentState gs == GameOver                        = inputKeyMenu ev gs
+        | currentState gs == Victory                         = inputKeyVictory ev gs
+        | otherwise                                          = gs
+            where playerState = state $ player gs
+
 inputKeyPaused :: Event -> GameState -> GameState
 inputKeyPaused (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc        = gstate { currentState = Running }
@@ -99,3 +104,5 @@ checkIfEnemiesLeft :: GameState -> GameState
 checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
                     | otherwise                         = gs { currentState = GameOver}
 
+updateElapsedTime :: GameState -> GameState
+updateElapsedTime gs = gs {elapsedTime = (elapsedTime gs) + 0.16}

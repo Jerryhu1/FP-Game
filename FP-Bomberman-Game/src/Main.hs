@@ -9,7 +9,7 @@ import Graphics.Gloss
 import Graphics.Gloss.Game
 
 main :: IO ()
-main = playIO FullScreen -- Or FullScreen
+main = playIO (InWindow "Lambda Bomberman!" (1000,1000) (-375,0))-- Or FullScreen
               white        -- Background color
               10               -- Frames per second
               initGame         -- Initial state

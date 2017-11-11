@@ -2,6 +2,8 @@ module Model.GameState where
     
     import System.Random
     import Graphics.Gloss.Game
+    import Data.List
+    import Data.Maybe
     
     import Model.Typeclasses.Renderizable
     import Model.Typeclasses.Positioned
@@ -21,8 +23,8 @@ module Model.GameState where
         enemies      :: Enemies,
         bombs        :: Bombs,
         explosions   :: [Explosion],
-        speedBoosts  :: [SpeedBoost]
-        
+        speedBoosts  :: [SpeedBoost],
+        elapsedTime :: Float
     }
     
     type Enemies = [Player]
@@ -31,19 +33,25 @@ module Model.GameState where
         render gs
                   | currentState gs == Paused   = pictures (pics ++ [png "res/pause-screen.png"] )
                   | currentState gs == GameOver = pictures (pics ++ [png "res/lose-screen.png"])
-                  | currentState gs == Victory  = pictures (pics ++ [png "res/victory-screen.png"])
+                  | currentState gs == Victory  = pictures (pics ++ [png "res/victory-screen.png", score])
                   | otherwise = pictures pics
                   where pics = [ render $ player gs
                                  , pictures (map render (enemies gs) )
                                  , pictures (map render (bombs gs) )
                                  , pictures (map render (explosions gs)) 
-                                 , pictures  (map render (speedBoosts gs))]
-    
+                                 , pictures  (map render (speedBoosts gs))
+                                 , time ]
+                        score = translate' (200, 160) $ scale 0.5 0.5 $ color white $ text (show $ calculateScore gs)
+                        time  = translate' (325, 475) $ scale 0.2 0.2 $ text (take (formatTime + 3) showTime)
+                        formatTime = fromJust (elemIndex '.' showTime)
+                        showTime = "Time: " ++ show (elapsedTime gs)
+
+
     data CurrentState = Loading | Running | Paused | GameOver | Victory
             deriving(Show, Eq)
     
     initGame :: GameState
-    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies [] [] initSpeedBoost
+    initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies [] [] initSpeedBoost 0.0
     
     initSpeedBoost :: [SpeedBoost]
     initSpeedBoost = [SpeedBoost (-350, 370) 10]
@@ -181,34 +189,5 @@ module Model.GameState where
     checkCollisionPowerup acc pl b@(x:xs) | checkCollision pl x = (acc++xs,applyEffectOnPlayer x pl)
                                           | otherwise           = checkCollisionPowerup (x:acc) pl xs
 
-
-                          
-            
-{- These functions are used for generating random maps
-                            
-    Generates random blocks by RNG in Gamestate
-    Chance is now set at 60%
-    
-    setBreakableBlocks :: GameState -> IO GameState
-    setBreakableBlocks gs =
-            do
-                g <- return $ grid gs
-                newGrid <- mapM setBreakableBlock g
-                return gs { grid = newGrid, currentState = Running}
-    
-    setBreakableBlock :: Field -> IO Field
-    setBreakableBlock f = do
-                            rng <- getRNumber
-                            let obj = gameObject f
-                            return (case obj of
-                                MetalBlock | rng > 70 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
-                                      | otherwise                      -> f
-                                _                      
-
-
-                                    
-    isSafeZone :: Field -> Bool
-    isSafeZone f | pos == (-375, 375) || pos == (-325, 375) || pos == (-375, 325) = True
-                 | otherwise = False
-                where pos = fieldPosition f
-                                -}
+    calculateScore :: GameState -> Int
+    calculateScore gs =  round (20000.0 - (elapsedTime gs * 100.0))
