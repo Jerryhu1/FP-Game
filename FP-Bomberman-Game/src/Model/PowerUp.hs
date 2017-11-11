@@ -8,6 +8,29 @@ import Model.Typeclasses.Effectable
 
 import Model.Player
 
+
+data PowerUp' = Powerup' {
+                        powerUpPosition :: Pos,
+                        powerUpType :: PowerUpType --amount kunnen we vastleggen per type
+}
+
+data PowerUpType = SpeedBoost' | ExtraBomb'
+
+--kopieer instances van SpeedBoost
+
+instance Effectable PowerUp' where -- hiervoor hoeft dan geen aparte typeclass meer
+        applyEffectOnPlayer s pl = case powerUpType s of
+                                        SpeedBoost' -> pl { velocity = 10 + velocity pl}
+                                        ExtraBomb' -> undefined -- hier iets op bedenken?
+
+
+addNewPowerUp :: Pos -> PowerUp'
+addNewPowerUp = undefined -- hier een Random poweruptype genereren
+
+
+
+
+
 data SpeedBoost = SpeedBoost {
                      speedBoostPosition :: Pos,
                      speedBoostAmount   :: Vel
