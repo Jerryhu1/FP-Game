@@ -58,9 +58,9 @@ initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomber
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (-350,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
+initEnemies = [Player "Monstertje" Alive (375,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
 
---if no collision occures, move player in the direction he is facing
+--if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
 movePlayerInDir player' = case playerDirection player' of
                                 West -> setPos (calcNewPos (-1,0) player') player'

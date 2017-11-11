@@ -27,7 +27,7 @@ handleAnimation :: GameState -> GameState
 handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
 
 updateDynamics:: GameState -> GameState
-updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer gstate
+updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer $ checkCollisionEffect gstate (speedBoosts gstate)
                       | otherwise                 = update gstate
       where update = moveEnemies . createRandomness . modifyDynamics
             createRandomness = \gs ->  snd $ withRandom (randomR (0,3)) gs
@@ -35,9 +35,6 @@ updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ 
             --functies moveEnemies + createRandomness staan beter in een nieuwe functie modEnemies
             --zie functie modPlayer
             --is er geen andere manier om randomness te maken?
-
-printCollision :: GameState -> String
-printCollision gs = show $ checkCollisionField (player gs) (grid gs)
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
@@ -97,4 +94,8 @@ checkPlayerVictory :: GameState -> GameState
 checkPlayerVictory gs | allDead     = gs { currentState = Victory }
                       | otherwise   = gs
             where allDead = all ( == Dead) (map health (enemies gs))
+
+checkIfEnemiesLeft :: GameState -> GameState
+checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
+                    | otherwise                         = gs { currentState = GameOver}
 

@@ -3,7 +3,6 @@ module Model.Grid where
 import Model.Typeclasses.Positioned
 import Model.GameObject
 import System.Random
-import GHC.Generics
 
 data Field = Field {
     fieldPosition :: Pos,
@@ -40,7 +39,7 @@ Creates a grid, since index starts at 0, both index are -1, y always has to be 2
 TO-DO: Integrate setBlocks with createGrid
 -}
 createGrid :: Grid
-createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) Empty| y <- [0..numGridY-1], x <- [0..numGridX-1]]
+createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) MetalBlock| y <- [0..numGridY-1], x <- [0..numGridX-1]]
 
 setFieldPosToPixels :: Field -> Field
 setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
@@ -229,7 +228,6 @@ level1 = [
     Field (375, -75) MetalBlock,
     --end row 12
     Field (-425, -125) MetalBlock,
-    Field (-375, -125) Empty,
     Field (-325, -125) StoneBlock,
     Field (-275, -125) StoneBlock,
     Field (-225, -125) StoneBlock,
@@ -261,7 +259,6 @@ level1 = [
     Field (-75, -225) StoneBlock,
     Field (75, -225) StoneBlock,
     Field (125, -225) StoneBlock,
-    Field (175, -225) Empty,
     Field (225, -225) StoneBlock,
     Field (375, -225) MetalBlock,
     --end row 15
