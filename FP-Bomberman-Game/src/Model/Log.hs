@@ -8,7 +8,7 @@ readCurrentHighscore = readFile "res/score.txt"
 
 
 printCollision :: GameState -> String
-printCollision gs = show $ checkCollisionField (player gs) (grid gs)
+printCollision gs = show $ checkCollisionSurr (player gs) (grid gs)
 
 writeNewHighScore :: Int -> IO ()
 writeNewHighScore score =

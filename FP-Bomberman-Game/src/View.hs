@@ -46,14 +46,9 @@ drawGrid grid = pictures $ map drawBox grid
                       drawBox field = translate' (getPos field) (drawField field)
 
 
-setPosToPixels :: Pos -> Pos
-setPosToPixels p = (-375+xPos ,375 - yPos )
-                        where xPos = fst p
-                              yPos = snd p
 
 drawBG :: Picture
 drawBG = translate' (-25, 75) $ png "res/bg.png"
 
-blockSize :: Float
-blockSize = 50.0
+
 

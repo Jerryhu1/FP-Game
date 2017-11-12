@@ -34,8 +34,8 @@ instance Renderizable PowerUp where
         
 
 applyEffectOnPlayer :: PowerUp -> Player -> Player
-applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = 5 + velocity pl}
-applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : timeTillNewBomb pl}
+applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = max 15 (5 + velocity pl)}
+applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : (timeTillNewBomb pl)}
 applyEffectOnPlayer (PowerUp _ FasterBomb) pl   = pl { explosionSpeed = max 12 $(explosionSpeed pl)-5}
 
 

@@ -19,10 +19,6 @@ class Positioned a => HasArea a where
     width :: a -> Int
     height :: a -> Int
 
-(+.) :: Pos -> Pos -> Pos
-(+.) (x,y) (x',y') = (x+x',y+y')
 
-(*.) :: Pos -> (Int -> Int) -> Pos
-(*.) (x,y) f = (f x,f y)
 
 

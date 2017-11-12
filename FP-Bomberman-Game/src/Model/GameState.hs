@@ -13,6 +13,7 @@ module Model.GameState where
     import Model.Grid
     import Model.GameObject
     
+    --General--
     data GameState = GameState {
         player       :: Player,
         grid         :: Grid,
@@ -52,7 +53,93 @@ module Model.GameState where
     initGame :: GameState
     initGame = GameState initPlayer level1 Loading (mkStdGen 0) Up initEnemies [] [] [] 0.0
 
+    
+    --Main Modification functions--
+    setKeyState :: KeyState -> GameState -> GameState
+    setKeyState Down gstate = gstate { keyState = Down, player = setPlayerState Walking $ player gstate}
+    setKeyState Up gstate = gstate { keyState = Up, player = setPlayerState Idle $ player gstate}
+    
 
+    checkIfDropBomb :: GameState -> Player -> GameState
+    checkIfDropBomb gstate pl | canDropBomb pl  = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) setTimerPlayer
+                              | otherwise       = gstate
+
+    modBombs:: GameState -> (Bombs -> Bombs) -> GameState
+    modBombs gstate f = gstate { bombs = f $ bombs gstate}
+    
+    modPlayer :: GameState -> (Player -> Player) -> GameState
+    modPlayer gstate f = gstate { player = f $ player gstate}
+
+    modEnemies :: GameState -> (Player -> Player) -> GameState
+    modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
+
+
+
+    -- UPDATING GAMESTATE--
+
+    --Main fuction for updating the GameState--
+    --If there are no explosions, just update the bomb timers and powerups
+    --If there are explosions, check collision between explosions and grid, powerups, enemies and player
+    modifyDynamics :: GameState -> GameState
+    modifyDynamics gs | not(null (explosions gs))       = updateRNG $ update $ modifyBombs gs
+                      | otherwise                       =  modifyBombs gs
+                    where update = modifyPlayer . modifyEnemies . modifyPowerUps . modifyGrid 
+                          modifyPlayer g = modPlayer g $ checkCollisionExplosions $ explosions g
+                          modifyEnemies g = modEnemies g $ checkCollisionExplosions $ explosions g
+                          modifyGrid g = g {grid = foldl checkDestruction (grid g) (explosions g)}
+                          modifyPowerUps g =  g {powerUps = foldl checkPowerDestruction (powerUps g) (explosions g)}
+
+    updateRNG :: GameState -> GameState
+    updateRNG gs = snd $ withRandom next gs
+    
+    --Updates timers in bombs and explosions, and creates new ones.
+    --Also checks if any Powerups have been picked up by Player and removes these
+    modifyBombs :: GameState -> GameState                      
+    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, powerUps = powerUpsTot, player = timerCountDownPlayer newPlayer}
+            where (newBombs, newExplosions) = setTimerBombs (bombs gs)
+                  (newOldExplosions, newPowerUps) = modOldExplosions (grid gs) (gen gs) (explosions gs)
+                  explosionsTot = newExplosions ++ newOldExplosions
+                  (newOldPowerUps, newPlayer) = checkCollisionPowerUp [] (player gs) $ powerUps gs
+                  powerUpsTot = newOldPowerUps ++ newPowerUps
+                  
+    --Updates timers in Bombs. Also creates explosions when timers run out.
+    setTimerBombs :: Bombs -> (Bombs,Explosions)
+    setTimerBombs bombs = let      setTimers = map explosionCountDown bombs
+                                   newBombs = filter (\b -> timeTillExplosion b > 0) setTimers
+                                   explodingBombs = filter (\b -> timeTillExplosion b == 0) setTimers
+                                   newExplosions = makeExplosions explodingBombs in
+                          (newBombs, newExplosions)
+    
+    
+    --Updates timers in Explosions. Also checks for Collision with Grid
+    modOldExplosions :: Grid -> StdGen -> Explosions -> (Explosions,[PowerUp])
+    modOldExplosions gr gen explosions = let (newExplosions, newSpeedBoosts) = unzip $ map (checkCollisionEx gen gr) explosions in
+                                  (setTimerExplosion newExplosions, concat newSpeedBoosts)
+    
+    --Checks if an explosion collides with Fields in Grid
+    --Uses RNG to randomly drop Powerups when an explosion collides with a stone block
+    checkCollisionEx :: StdGen -> Grid -> Explosion -> (Explosion,[PowerUp])
+    checkCollisionEx gen [] ex     = (moveExplosion ex,[])
+    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed 
+                                            = (ex, []) --explosion cannot move through blocks if it has already destroyed a stone block
+                                    | checkCollision ex x && gameObject x == StoneBlock 
+                                            = (setExplosionDestructed $ moveExplosion ex, dropPowerUp (snd $ next gen) $ getPos x)
+                                            --if explosion is moving and collides with a stoneblock, set status to Destructed and possibly drop PowerUp
+                                    | checkCollision ex x        = (ex, [])
+                                            -- if explosion collides with a metal block, stop moving
+                                    | otherwise                  = checkCollisionEx (snd $ next gen) xs ex
+    
+    
+    dropPowerUp:: StdGen -> Pos -> [PowerUp]
+    dropPowerUp gen pos | rng > 70 =  [addNewPowerUp pos gen]
+                           | otherwise = []
+                            where rng = fst $ randomR (0,100) gen :: Int
+
+
+
+    --COLLISION DETECTION --
+    
+    --MAIN GENERIC COLLISION DETECTION FUNCTION--
     -- Given an object that has an area, and a movable object, return true if there's a collision between these two, else false
     checkCollision :: (HasArea a, Movable b) => b -> a -> Bool
     checkCollision pl a = let (x,y) = getPos pl
@@ -71,96 +158,25 @@ module Model.GameState where
                                             || inArea a (x-1,y-h) -> True
                                         | otherwise                         -> False
     
-    -- Modify the state of a bomb inside the gamestate using a function
-    modBombs:: GameState -> (Bombs -> Bombs) -> GameState
-    modBombs gstate f = gstate { bombs = f $ bombs gstate}
     
-    -- Modify the state of a grid inside the gamestate using a function
-    modGrid :: GameState -> (Grid -> Grid) -> GameState
-    modGrid gstate f = gstate { grid = f $ grid gstate}
     
-    -- Modify the state of a player using a function
-    modPlayer :: GameState -> (Player -> Player) -> GameState
-    modPlayer gstate f = gstate { player = f $ player gstate}
+     --BOMBS VS GRID--
 
-    modEnemies :: GameState -> (Player -> Player) -> GameState
-    modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
-
-    modPowerUps :: GameState -> (PowerUp -> PowerUp) -> GameState
-    modPowerUps gstate f = gstate {powerUps = map f (powerUps gstate) }
-
-    modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | not(null (explosions gs))       = updateRNG $ update $ modifyBombs gs
-                      | otherwise                       =  modifyBombs gs
-                    where update = modifyPlayer . modifyEnemies . modifyPowerUps . modifyGrid 
-                          modifyPlayer g = modPlayer g $ checkCollisionExplosions $ explosions g
-                          modifyEnemies g = modEnemies g $ checkCollisionExplosions $ explosions g
-                          modifyGrid g = g {grid = foldl checkDestruction (grid g) (explosions g)}
-                          modifyPowerUps g =  g {powerUps = foldl checkPowerDestruction (powerUps g) (explosions g)}
-
-    updateRNG :: GameState -> GameState
-    updateRNG gs = snd $ withRandom next gs
-                          
-    modifyBombs :: GameState -> GameState                      
-    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, powerUps = powerUpsTot, player = timerCountDownPlayer newPlayer}
-            where (newBombs, newExplosions) = setTimerBombs (bombs gs)
-                  (newOldExplosions, newPowerUps) = modOldExplosions (grid gs) (gen gs) (explosions gs)
-                  explosionsTot = newExplosions ++ newOldExplosions
-                  (newOldPowerUps, newPlayer) = checkCollisionPowerUp [] (player gs) $ powerUps gs
-                  powerUpsTot = newOldPowerUps ++ newPowerUps
-                  
-    
-    setTimerBombs :: Bombs -> (Bombs,Explosions)
-    setTimerBombs bombs = let      setTimers = map explosionCountDown bombs
-                                   newBombs = filter (\b -> timeTillExplosion b > 0) setTimers
-                                   explodingBombs = filter (\b -> timeTillExplosion b == 0) setTimers
-                                   newExplosions = makeExplosions explodingBombs in
-                          (newBombs, newExplosions)
-    
-    
-    
-    modOldExplosions :: Grid -> StdGen -> Explosions -> (Explosions,[PowerUp])
-    modOldExplosions gr gen explosions = let (newExplosions, newSpeedBoosts) = unzip $ map (checkCollisionEx gen gr) explosions in
-                                  (setTimerExplosion newExplosions, concat newSpeedBoosts)
-    
-    
-    
-    checkCollisionEx :: StdGen -> Grid -> Explosion -> (Explosion,[PowerUp])
-    checkCollisionEx gen [] ex     = (moveExplosion ex,[])
-    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed
-                                            = (ex, [])
-                                    | checkCollision ex x && gameObject x == StoneBlock
-                                            = (setExplosionDestructed $ moveExplosion ex, dropPowerUp (snd $ next gen) $ getPos x)
-                                    | checkCollision ex x        = (setExplosionDestructed $ moveExplosion ex, [])
-                                    | otherwise                  = checkCollisionEx (snd $ next gen) xs ex
-    
-    dropPowerUp:: StdGen -> Pos -> [PowerUp]
-    dropPowerUp gen pos | rng > 70 =  [addNewPowerUp pos gen]
-                           | otherwise = []
-                            where rng = fst $ randomR (0,100) gen :: Int
-
-
-    --PLAYER VS BOMBS--
-    checkIfDropBomb :: GameState -> Player -> GameState
-    checkIfDropBomb gstate pl | canDropBomb pl  = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) setTimerPlayer
-                              | otherwise       = gstate
-
-    --COLLISION DETECTION --
-    --BOMBS VS GRID--
-
-    
+    --If Explosion collides with stoneBlock, remove stoneblock from grid
     checkDestruction :: Grid -> Explosion -> Grid
     checkDestruction [] b = []
-    checkDestruction (x:xs) b | gameObject x == StoneBlock && inArea b (getPos x) = xs
+    checkDestruction (x:xs) b | gameObject x == StoneBlock && checkCollision b x  = xs
                               | otherwise                                         = x : checkDestruction xs b
     
-    
+    --If Explosion collides with a powerup, remove powerup
     checkPowerDestruction :: [PowerUp] -> Explosion -> [PowerUp]
     checkPowerDestruction [] b = []
     checkPowerDestruction (x:xs) b | explosionStatus b == Moving && inArea b (getPos x) = xs
                                    | otherwise           = x : checkPowerDestruction xs b
     
     --EXPLOSIONS VS PLAYER--
+
+    --If Explosions encounter a Player, set that players' status to dead
     checkCollisionExplosions :: Explosions -> Player -> Player
     checkCollisionExplosions [] p     = p
     checkCollisionExplosions (x:xs) p   | checkCollision p x                   = setPlayerDead p
@@ -171,62 +187,42 @@ module Model.GameState where
     setPlayerDead pl = pl { state = Dying}
     
     
-    --ENEMIES VS PLAYER--
-    checkCollisionEnemies :: Player -> [Player] -> Bool
-    checkCollisionEnemies p [] = False
-    checkCollisionEnemies p (x:xs) | checkCollision p x && enemyState == Alive     = True
-                                   | otherwise                                     = checkCollisionEnemies p xs
-                                   where enemyState = health x
     
-    --PLAYERS VS GRID--
+    --PLAYERS MOVEMENT--
+
     --change the direction in which the player is positioned and possibly move player in that direction
     changePlayerDir :: GameState -> Direction -> Player -> Player
     changePlayerDir gstate dir player' = checkIfMovePlayer gstate $ setDir dir player'
 
-    changeEnemyDir :: GameState -> Direction -> Player -> Player
-    changeEnemyDir gstate dir player' = checkIfMoveEnemy gstate $ setDir dir player'
     
-    -- If player collides with a block, don't change position and check for other collisions, otherwise move and check for other collisions.
+    -- If player collides with an enemy, set players' status to Dying.
+    -- If player collides with a block, don't change position. Otherwise move
     checkIfMovePlayer :: GameState -> Player -> Player
-    checkIfMovePlayer gs p  | checkCollisionEnemies p $ enemies gs        = setPlayerDead p
-                            | checkCollisionField p $ grid gs             = p
-                            | otherwise                                   = movePlayerInDir p
-
-     -- If enemy collides with a block, don't change position and check for other collisions, otherwise move and check for other collisions.
-    checkIfMoveEnemy :: GameState -> Player -> Player
-    checkIfMoveEnemy gs p  | checkCollisionField p $ grid gs                                       = p
-                            | otherwise                                                             = movePlayerInDir p
+    checkIfMovePlayer gs p  | checkCollisionSurr p aliveEnemies        = setPlayerDead p
+                            | checkCollisionSurr p $ bombs gs          = p
+                            | checkCollisionSurr p $ grid gs           = p
+                            | otherwise                                = movePlayerInDir p
+                            where aliveEnemies = filter (\x -> health x == Alive) (enemies gs)
 
 
-    -- Returns True if there is collision with a gameobject, otherwise False
-    checkCollisionField :: Player -> Grid -> Bool
-    checkCollisionField _ []     = False
-    checkCollisionField p (x:xs)  | checkCollision p x  = True
-                                  | otherwise                 = checkCollisionField p xs
+    --Checks if Player collides with an enemy
+    checkCollisionSurr :: HasArea a => Player -> [a] -> Bool
+    checkCollisionSurr p [] = False
+    checkCollisionSurr p (x:xs) | checkCollision p x     = True
+                                | otherwise              = checkCollisionSurr p xs
+                                   
 
-    checkCollisionBombs :: Player -> Bombs -> Bool
-    checkCollisionBombs _ []     = False
-    checkCollisionBombs p (x:xs)  | checkCollision p x  = True
-                                  | otherwise                 = checkCollisionBombs p xs
 
     -- Applies an effect/powerup on the player if there is a collision, otherwise returns the original player
     checkCollisionPowerUp ::  [PowerUp] -> Player -> [PowerUp] -> ([PowerUp],Player)
     checkCollisionPowerUp acc pl [] = (acc,pl)
     checkCollisionPowerUp acc pl b@(x:xs) | checkCollision pl x = (acc++xs,applyEffectOnPlayer x pl)
                                           | otherwise           = checkCollisionPowerUp (x:acc) pl xs
-    -- Calculates a score based on elapsed time
-    calculateScore :: GameState -> Int
-    calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
-                      | otherwise                  =  round (0.0 + (elapsedTime gs * 10.0))
 
 
 
-    setKeyState :: KeyState -> GameState -> GameState
-    setKeyState k gstate = gstate { keyState = k}
-
-    setPlayerState :: PlayerState -> GameState -> GameState
-    setPlayerState pState gstate = gstate { player = p { state = pState } }
-                                    where p = player gstate
+    --CURRENT STATE FUNCTIONS--
+    --END OF GAME--
 
     checkIfPlayerIsAlive :: GameState -> GameState
     checkIfPlayerIsAlive gs | health (player gs) == Alive  = gs
@@ -244,7 +240,14 @@ module Model.GameState where
     updateElapsedTime :: GameState -> GameState
     updateElapsedTime gs = gs {elapsedTime = elapsedTime gs + 0.16}
 
+    -- Calculates a score based on elapsed time
+    calculateScore :: GameState -> Int
+    calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
+                      | otherwise                  =  round (0.0 + (elapsedTime gs * 10.0))
 
+                      
+    --CREATE RANDOM NUMBERS--
+    --Used for enemy movement and powerups
     withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)
     withRandom f gs = let (res, g') = f (gen gs)
                         in ( res, gs { gen = g'} )
@@ -254,8 +257,7 @@ module Model.GameState where
           = let (n, g') = randomR (min,max) (gen gs)
                 in (n, gs { gen = g'})
 
-    getRNumber :: IO Int
-    getRNumber = getStdRandom (randomR(1,100))
+
 
 
 
