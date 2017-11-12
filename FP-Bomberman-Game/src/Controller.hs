@@ -45,7 +45,16 @@ updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ 
 input :: Event -> GameState -> IO GameState
 input e gstate = return (handleInput e gstate)
 
--- Eerste opzet lopende player
+handleInput :: Event -> GameState -> GameState
+handleInput ev gs
+        | currentState gs == Running && playerState /= Dying = inputKeyRunning ev gs
+        | currentState gs == Paused                          = inputKeyPaused ev gs
+        | currentState gs == GameOver                        = inputKeyMenu ev gs
+        | currentState gs == Victory                         = inputKeyMenu ev gs
+        | otherwise                                          = gs
+            where playerState = state $ player gs
+
+-- Handles the input when gamestate is running. Changes the state of the player
 inputKeyRunning :: Event -> GameState -> GameState
 inputKeyRunning (EventKey c Down _ _) gstate
     | c == SpecialKey KeyUp     = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
@@ -57,47 +66,16 @@ inputKeyRunning (EventKey c Down _ _) gstate
 inputKeyRunning (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
 inputKeyRunning _ gstate = gstate
 
-handleInput :: Event -> GameState -> GameState
-handleInput ev gs
-        | currentState gs == Running && playerState /= Dying = inputKeyRunning ev gs
-        | currentState gs == Paused                          = inputKeyPaused ev gs
-        | currentState gs == GameOver                        = inputKeyMenu ev gs
-        | currentState gs == Victory                         = inputKeyMenu ev gs
-        | otherwise                                          = gs
-            where playerState = state $ player gs
-
+-- Handles the input when the game is paused
 inputKeyPaused :: Event -> GameState -> GameState
 inputKeyPaused (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc        = gstate { currentState = Running }
                 | c == SpecialKey KeySpace      = error "Quit the game"
 inputKeyPaused _ gstate = gstate
 
+-- Handles the input when the game is over
 inputKeyMenu :: Event -> GameState -> GameState
 inputKeyMenu (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc       = undefined
                 | c == SpecialKey KeySpace     = initGame
 inputKeyMenu _ gstate = gstate
-
-
-setKeyState :: KeyState -> GameState -> GameState
-setKeyState k gstate = gstate { keyState = k}
-
-setPlayerState :: PlayerState -> GameState -> GameState
-setPlayerState pState gstate = gstate { player = p { state = pState } }
-                                where p = player gstate
-
-checkIfPlayerIsAlive :: GameState -> GameState
-checkIfPlayerIsAlive gs | health (player gs) == Alive  = gs
-                        | otherwise                    = gs { currentState = GameOver }
-
-checkPlayerVictory :: GameState -> GameState
-checkPlayerVictory gs | allDead     = gs { currentState = Victory }
-                      | otherwise   = gs
-            where allDead = all ( == Dead) (map health (enemies gs))
-
-checkIfEnemiesLeft :: GameState -> GameState
-checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
-                    | otherwise                         = gs { currentState = GameOver}
-
-updateElapsedTime :: GameState -> GameState
-updateElapsedTime gs = gs {elapsedTime = (elapsedTime gs) + 0.16}

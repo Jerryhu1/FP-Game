@@ -25,6 +25,8 @@ instance Effectable PowerUp' where -- hiervoor hoeft dan geen aparte typeclass m
                                         ExtraBomb' -> undefined -- hier iets op bedenken?
 
 
+
+
 addNewPowerUp :: Pos -> PowerUp'
 addNewPowerUp = undefined -- hier een Random poweruptype genereren
 
@@ -43,7 +45,7 @@ instance Renderizable SpeedBoost where
 instance Positioned SpeedBoost where
         getPos b = speedBoostPosition b
 
-instance HasArea SpeedBoost where 
+instance HasArea SpeedBoost where
         width  b = 49
         height b = 49
         inArea b (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
@@ -66,7 +68,7 @@ instance Renderizable ExtraBomb where
 instance Positioned ExtraBomb where
        getPos b = extraBombPosition b
 
-instance HasArea ExtraBomb where 
+instance HasArea ExtraBomb where
        width  b = 49
        height b = 49
        inArea b (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
@@ -77,5 +79,61 @@ instance Effectable ExtraBomb where
         applyEffectOnPlayer = undefined
 
 
+{-
 
+module Model.PowerUp where
+
+import Graphics.Gloss
+import Graphics.Gloss.Game
+
+import Model.Typeclasses.Positioned
+import Model.Typeclasses.Renderizable
+import Model.Typeclasses.Effectable
+
+import Model.Player
+
+
+data PowerUp = Powerup {
+                        powerUpPosition :: Pos,
+                        powerUpType :: PowerUpType --amount kunnen we vastleggen per type
+}
+
+data PowerUpType = SpeedBoost | ExtraBomb
+
+--kopieer instances van SpeedBoost
+
+instance Effectable PowerUp where -- hiervoor hoeft dan geen aparte typeclass meer
+        applyEffectOnPlayer s pl = case powerUpType s of
+                                        SpeedBoost' -> pl { velocity = 10 + velocity pl}
+                                        ExtraBomb' -> undefined -- hier iets op bedenken?
+
+instance Positioned Powerup where
+        getPos p = powerUpPosition p
+
+instance HasArea PowerUp where
+        width  b = 49
+        height b = 49
+        inArea b (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
+            where (x1,y1) = getPos b
+                  (x2,y2) = (x1+width b,y1-height b)
+
+instance Renderizable PowerUp where
+        render PowerUp' = translate' (speedBoostPosition s) $ png "res/powerup-speed-boost.png"
+        render ExtraBomb' = translate' (speedBoostPosition s) $ png "res/powerup-extra-bomb.png"
+
+applyEffectOnPlayer :: PowerUp -> Player -> Player
+applyEffectOnPlayer SpeedBoost' pl = pl { velocity = 5 + velocity pl}
+applyEffectOnPlayer ExtrAbomb' pl = pl
+
+
+addNewPowerUp :: Pos -> PowerUp
+addNewPowerUp = undefined -- hier een Random poweruptype genereren
+
+
+
+
+
+
+
+-}
 

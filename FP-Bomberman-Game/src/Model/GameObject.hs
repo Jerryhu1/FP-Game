@@ -15,6 +15,7 @@ module Model.GameObject where
         render StoneBlock = png "res/stone-block.png"
 
 
+
  makeExplosions :: Bombs -> Explosions
  makeExplosions bs = concat $ map (\x -> addExplosion $ getPos x) bs
  

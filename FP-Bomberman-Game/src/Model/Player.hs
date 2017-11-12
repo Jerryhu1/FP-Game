@@ -59,7 +59,8 @@ initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomber
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0]
+initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0,
+               Player "Monstertje2" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0]
 
 --if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -113,8 +114,9 @@ animatePlayer p  | state p == Walking = animateWalkingPlayer p
                  | state p == Dying   = animateDyingPlayer p
                  | otherwise          = p
 
+-- Animates a walking player, toggles between two different pictures when the player is walking
 animateWalkingPlayer :: Player -> Player
-animateWalkingPlayer p | isJust $ currentPic =
+animateWalkingPlayer p | isJust currentPic =
                                 if fromJust (currentPic) == 1
                                 then p { sprite = (playerWalkingPictures p !! 0) }
                                 else  p { sprite = (playerWalkingPictures p !! 1) }
@@ -122,6 +124,7 @@ animateWalkingPlayer p | isJust $ currentPic =
                             where dir = playerDirection p
                                   currentPic = elemIndex (sprite p) (playerWalkingPictures p)
 
+-- Animates a dying player, keeps taking the next picture each step, and if it reaches the last picture, change the state to Dead
 animateDyingPlayer :: Player -> Player
 animateDyingPlayer p | isNothing currentPicIndex                   = p { sprite = head (playerDyingPictures p)}
                      | fromJust currentPicIndex == frameAmount - 1 = p { sprite = blank, health = Dead }

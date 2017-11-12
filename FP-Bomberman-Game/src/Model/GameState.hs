@@ -55,6 +55,7 @@ module Model.GameState where
     
     initSpeedBoost :: [SpeedBoost]
     initSpeedBoost = [SpeedBoost (-350, 370) 10]
+
     -- Given an object that has an area, and a movable object, return true if there's a collision between these two, else false
     checkCollision :: (HasArea a, Movable b) => b -> a -> Bool
     checkCollision pl a = let (x,y) = getPos pl
@@ -194,3 +195,28 @@ module Model.GameState where
     calculateScore :: GameState -> Int
     calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
                       | otherwise                  =  round (0.0 + (elapsedTime gs * 100.0))
+
+
+
+    setKeyState :: KeyState -> GameState -> GameState
+    setKeyState k gstate = gstate { keyState = k}
+
+    setPlayerState :: PlayerState -> GameState -> GameState
+    setPlayerState pState gstate = gstate { player = p { state = pState } }
+                                    where p = player gstate
+
+    checkIfPlayerIsAlive :: GameState -> GameState
+    checkIfPlayerIsAlive gs | health (player gs) == Alive  = gs
+                            | otherwise                    = gs { currentState = GameOver }
+
+    checkPlayerVictory :: GameState -> GameState
+    checkPlayerVictory gs | allDead     = gs { currentState = Victory }
+                          | otherwise   = gs
+                where allDead = all ( == Dead) (map health (enemies gs))
+
+    checkIfEnemiesLeft :: GameState -> GameState
+    checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
+                        | otherwise                         = gs { currentState = GameOver}
+
+    updateElapsedTime :: GameState -> GameState
+    updateElapsedTime gs = gs {elapsedTime = (elapsedTime gs) + 0.16}

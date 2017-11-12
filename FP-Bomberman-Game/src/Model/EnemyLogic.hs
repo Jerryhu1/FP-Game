@@ -46,7 +46,7 @@ getPath gs p | rng == 0  = (oldX + 50, oldY)
              | rng == 2  = (oldX, oldY + 50)
              | otherwise  = (oldX, oldY - 50)
             where rng :: Int
-                  rng = fst $ withRandom (randomR (0,3)) gs
+                  rng = fst $ genNumberByRange gs (0,3)
                   (oldX,oldY) = goal p
 
 -- Sets the new goal according to its current position
