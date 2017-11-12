@@ -20,9 +20,9 @@ step secs gstate = do
                         gs <- handleGameState gstate
                         return $ handleAnimation gs
 
-
+-- Updates the gamestate based on the current state.
 handleGameState :: GameState -> IO GameState
-handleGameState gstate   | currentState gstate == Loading   = return $ gstate {currentState = Running} --setBreakableBlocks gstate
+handleGameState gstate   | currentState gstate == Loading   = return $ gstate {currentState = Running} -- For initialization
                          | currentState gstate == Running   = return $ updateDynamics $ updateElapsedTime gstate
                          | currentState gstate == Victory || currentState gstate == GameOver
                                         = do writeNewHighScore $ calculateScore gstate
@@ -32,15 +32,13 @@ handleGameState gstate   | currentState gstate == Loading   = return $ gstate {c
 handleAnimation :: GameState -> GameState
 handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
 
+-- Update each object in the gamestate
 updateDynamics:: GameState -> GameState
 updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkIfMovePlayer gstate
                       | otherwise                 = update gstate
       where update = moveEnemies . createRandomness . modifyDynamics
             createRandomness = \gs ->  snd $ withRandom next gs
             moveEnemies = \gs -> foldl moveEnemy gs (enemies gs)
-            --functies moveEnemies + createRandomness staan beter in een nieuwe functie modEnemies
-            --zie functie modPlayer
-            --is er geen andere manier om randomness te maken?
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState

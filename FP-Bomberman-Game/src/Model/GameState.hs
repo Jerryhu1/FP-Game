@@ -187,9 +187,9 @@ module Model.GameState where
     
     -- If player collides with a block, don't change position and check for other collisions, otherwise move and check for other collisions.
     checkIfMovePlayer :: GameState -> Player -> Player
-    checkIfMovePlayer gs p  | checkCollisionEnemies p $ enemies gs                                  = setPlayerDead p
-                            | checkCollisionField p $ grid gs                                       = p
-                            | otherwise                                                             = movePlayerInDir p
+    checkIfMovePlayer gs p  | checkCollisionEnemies p $ enemies gs        = setPlayerDead p
+                            | checkCollisionField p $ grid gs             = p
+                            | otherwise                                   = movePlayerInDir p
 
      -- If enemy collides with a block, don't change position and check for other collisions, otherwise move and check for other collisions.
     checkIfMoveEnemy :: GameState -> Player -> Player

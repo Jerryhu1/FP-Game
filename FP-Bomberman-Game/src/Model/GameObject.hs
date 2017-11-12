@@ -92,8 +92,6 @@ module Model.GameObject where
  newEx :: Pos -> Direction -> Explosion
  newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 12, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
 
- --moveExplosions:: Explosions -> Explosions
- --moveExplosions = map moveExplosion
 
  moveExplosion:: Explosion -> Explosion
  moveExplosion ex = let (x,y) = getPos ex in
