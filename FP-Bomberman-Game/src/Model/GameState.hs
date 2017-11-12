@@ -142,8 +142,8 @@ module Model.GameState where
 
     --PLAYER VS BOMBS--
     checkIfDropBomb :: GameState -> Player -> GameState
-    checkIfDropBomb gstate pl | timeTillNewBomb pl == 0 = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) (setTimerPlayer 24)
-                              | otherwise               = gstate
+    checkIfDropBomb gstate pl | canDropBomb pl  = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) setTimerPlayer
+                              | otherwise       = gstate
 
     --COLLISION DETECTION --
     --BOMBS VS GRID--

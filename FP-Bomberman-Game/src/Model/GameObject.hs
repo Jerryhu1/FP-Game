@@ -90,7 +90,7 @@ module Model.GameObject where
  addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]]
 
  newEx :: Pos -> Direction -> Explosion
- newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 12, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
+ newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
 
 
  moveExplosion:: Explosion -> Explosion

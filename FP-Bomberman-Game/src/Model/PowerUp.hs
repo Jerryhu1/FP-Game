@@ -15,7 +15,7 @@ data PowerUp = PowerUp {
                 powerUpType     :: PowerUpType
                 }
 
-data PowerUpType = SpeedBoost | ExtraBomb
+data PowerUpType = SpeedBoost | ExtraBomb | FasterBomb
 
 instance Positioned PowerUp where
         getPos p = powerUpPosition p
@@ -30,17 +30,21 @@ instance HasArea PowerUp where
 instance Renderizable PowerUp where
         render (PowerUp x SpeedBoost)   = translate' x $ png "res/powerup-speed-boost.png"
         render (PowerUp x ExtraBomb)    = translate' x $ png "res/powerup-extra-bomb.png"
-
+        render (PowerUp x FasterBomb)    = translate' x  $ png "powerup-faster-bomb.png"
+        
 
 applyEffectOnPlayer :: PowerUp -> Player -> Player
 applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = 5 + velocity pl}
-applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl
+applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : (timeTillNewBomb pl)}
+applyEffectOnPlayer (PowerUp _ FasterBomb) pl   = pl { explosionSpeed = max 12 $(explosionSpeed pl)-5}
+
 
 
 addNewPowerUp :: Pos -> StdGen -> PowerUp
 addNewPowerUp pos r | rng == 0  = PowerUp pos SpeedBoost
+                    | rng == 1  = PowerUp pos FasterBomb
                     | otherwise = PowerUp pos ExtraBomb
-                where rng = fst $ randomR (0,1) r :: Int
+                where rng = fst $ randomR (0,2) r :: Int
 
 
 

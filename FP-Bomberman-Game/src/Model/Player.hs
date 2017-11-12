@@ -19,7 +19,8 @@ data Player = Player {
             goal :: Pos,
             state :: PlayerState,
             sprite :: Picture,
-            timeTillNewBomb :: Int
+            explosionSpeed :: Int,
+            timeTillNewBomb :: [Int]
         }deriving(Eq)
 
 data PlayerState = Walking | Idle | Dying deriving (Eq, Show)
@@ -55,12 +56,12 @@ instance Renderizable Player where
                 where newPos = (+.) (-5,15) $ getPos p
 
 initPlayer :: Player
-initPlayer = Player "Jerry" Alive (-370,370) 5 West (0,0) Idle (png "res/bomberman-idle.png") 1
+initPlayer = Player "Jerry" Alive (-370,370) 5 West (0,0) Idle (png "res/bomberman-idle.png") 24 [0]
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0 ,
-               Player "Monstertje2" Alive (275, -375) 5 South (225, -375) Walking (png "res/enemy-idle-down-1.png") 0 ]
+initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 24 [0],
+               Player "Monstertje2" Alive (275, -375) 5 South (225, -375) Walking (png "res/enemy-idle-down-1.png") 24 [0] ]
 
 
 --if no collision occurs, move player in the direction he is facing
@@ -88,11 +89,22 @@ getGridPos p = (*.) midPosPlayer f
             f = \x -> x - ((x-25) `mod` fieldSize)
 
 timerCountDownPlayer :: Player -> Player
-timerCountDownPlayer pl  | timeTillNewBomb pl> 0 = pl {timeTillNewBomb = (timeTillNewBomb pl)-1}
-                         | otherwise             = pl
+timerCountDownPlayer pl = pl {timeTillNewBomb = map (\x -> max 0 (x-1)) $timeTillNewBomb pl }
 
-setTimerPlayer :: Int -> Player -> Player
-setTimerPlayer n p = p {timeTillNewBomb = n}
+
+setTimerPlayer :: Player -> Player
+setTimerPlayer pl = pl {timeTillNewBomb = replaceTimer n $timeTillNewBomb pl}
+    where   n = explosionSpeed pl
+
+replaceTimer :: Int -> [Int] -> [Int]
+replaceTimer _ [] = []
+replaceTimer n (x:xs) | x == 0    = n: xs
+                      | otherwise = x : replaceTimer n xs
+                    
+
+canDropBomb :: Player -> Bool
+canDropBomb pl  | elem 0 (timeTillNewBomb pl)   = True
+                | otherwise                     = False
 
 -- Returns a list of pictures that represent a walking direction
 playerWalkingPictures :: Player -> [Picture]
