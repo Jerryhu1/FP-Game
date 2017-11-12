@@ -30,7 +30,7 @@ instance HasArea PowerUp where
 instance Renderizable PowerUp where
         render (PowerUp x SpeedBoost)   = translate' x $ png "res/powerup-speed-boost.png"
         render (PowerUp x ExtraBomb)    = translate' x $ png "res/powerup-extra-bomb.png"
-        render (PowerUp x FasterBomb)    = translate' x  $ png "powerup-faster-bomb.png"
+        render (PowerUp x FasterBomb)    = translate' x $ png "res/powerup-faster-bomb.png"
         
 
 applyEffectOnPlayer :: PowerUp -> Player -> Player
