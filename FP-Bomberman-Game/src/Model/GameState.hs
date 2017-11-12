@@ -129,8 +129,10 @@ module Model.GameState where
     
     checkCollisionEx :: StdGen -> Grid -> Explosion -> (Explosion,[SpeedBoost])
     checkCollisionEx gen [] ex     = (moveExplosion ex,[])
-    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed     = (ex, [])
-                                    | checkCollision ex x && gameObject x == StoneBlock    = (setExplosionDestructed $ moveExplosion ex, dropSpeedBoost gen $ getPos x)
+    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed
+                                            = (ex, [])
+                                    | checkCollision ex x && gameObject x == StoneBlock
+                                            = (setExplosionDestructed $ moveExplosion ex, dropSpeedBoost gen $ getPos x)
                                     | checkCollision ex x        = (setExplosionDestructed $ moveExplosion ex, [])
                                     | otherwise                  = checkCollisionEx gen xs ex
     
