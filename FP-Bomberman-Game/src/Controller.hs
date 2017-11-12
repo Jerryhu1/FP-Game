@@ -69,7 +69,7 @@ inputKeyRunning _ gstate = gstate
 inputKeyPaused :: Event -> GameState -> GameState
 inputKeyPaused (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc        = gstate { currentState = Running }
-                | c == SpecialKey KeySpace      = error "Quit the game"
+                | c == SpecialKey KeySpace      = undefined 
 inputKeyPaused _ gstate = gstate
 
 -- Handles the input when the game is over

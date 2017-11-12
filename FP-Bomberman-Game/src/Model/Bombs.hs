@@ -5,8 +5,6 @@ module Model.Bombs where
  import Model.Typeclasses.Positioned
  import Model.Typeclasses.Renderizable
 
-
-
  ---BOMBS---
  data Bomb = Bomb {
                     bombPosition :: Pos,
@@ -20,8 +18,8 @@ module Model.Bombs where
     getPos = bombPosition
 
  instance HasArea Bomb where
-    width b = 49
-    height b = 49
+    width b = 45
+    height b = 45
     inArea b (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
         where   (x1,y1) = getPos b
                 (x2,y2) = (x1+width b,y1-height b)

@@ -26,7 +26,7 @@ drawHighScore = do
 viewPure :: GameState -> Picture
 viewPure gstate  = pictures [
                                 drawBG,
-                                drawGrid $ grid gstate,
+                                drawGameObjects $ grid gstate,
                                 render gstate
                             ]
 
@@ -38,8 +38,8 @@ drawField f = render $ gameObject f
     2. Draw a box and translate it with each position
     3. Return pictures
 -}
-drawGrid :: Grid -> Picture
-drawGrid grid = pictures $ map drawBox grid
+drawGameObjects :: Grid -> Picture
+drawGameObjects grid = pictures $ map drawBox grid
                 where fieldToDraw = map drawField grid
                       drawBox field = translate' (getPos field) (drawField field)
 

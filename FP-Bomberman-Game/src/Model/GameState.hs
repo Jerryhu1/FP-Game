@@ -35,9 +35,10 @@ module Model.GameState where
                   | currentState gs == GameOver = pictures (pics ++ [png "res/lose-screen.png", score])
                   | currentState gs == Victory  = pictures (pics ++ [png "res/victory-screen.png", score])
                   | otherwise = pictures pics
-                  where pics = [ render $ player gs
-                                 , pictures (map render (enemies gs) )
-                                 , pictures (map render (bombs gs) )
+                  where pics = [ pictures (map render (grid gs))
+                                 , render $ player gs 
+                                 , pictures (map render (enemies gs))
+                                 , pictures (map render (bombs gs))
                                  , pictures (map render (explosions gs)) 
                                  , pictures  (map render (powerUps gs))
                                  , time ]
@@ -132,7 +133,7 @@ module Model.GameState where
     
     
     dropPowerUp:: StdGen -> Pos -> [PowerUp]
-    dropPowerUp gen pos | rng > 70 =  [addNewPowerUp pos gen]
+    dropPowerUp gen pos | rng > 60 =  [addNewPowerUp pos gen]
                            | otherwise = []
                             where rng = fst $ randomR (0,100) gen :: Int
 
@@ -259,36 +260,3 @@ module Model.GameState where
     genNumberByRange gs (min,max)
           = let (n, g') = randomR (min,max) (gen gs)
                 in (n, gs { gen = g'})
-
-
-
-
-
-{- These functions are used for generating random maps
-                            
-    Generates random blocks by RNG in Gamestate
-    Chance is now set at 60%
-    
-    setBreakableBlocks :: GameState -> IO GameState
-    setBreakableBlocks gs =
-            do
-                g <- return $ grid gs
-                newGrid <- mapM setBreakableBlock g
-                return gs { grid = newGrid, currentState = Running}
-    
-    setBreakableBlock :: Field -> IO Field
-    setBreakableBlock f = do
-                            rng <- getRNumber
-                            let obj = gameObject f
-                            return (case obj of
-                                MetalBlock | rng > 70 && not (isSafeZone f)      -> f { gameObject = StoneBlock}
-                                      | otherwise                      -> f
-                                _                      
-
-
-                                    
-    isSafeZone :: Field -> Bool
-    isSafeZone f | pos == (-375, 375) || pos == (-325, 375) || pos == (-375, 325) = True
-                 | otherwise = False
-                where pos = fieldPosition f
-                                -}
