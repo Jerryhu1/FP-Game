@@ -60,7 +60,7 @@ module Model.GameObject where
     spriteExplosion :: Picture
  }
 
- data ExplosionStatus = Moving | Destructed
+ data ExplosionStatus = Moving | Destructed | Mid
     deriving(Show, Eq) 
 
  type Explosions = [Explosion]
@@ -76,8 +76,8 @@ module Model.GameObject where
                 (x2,y2) = (x1+ width f,y1-height f)
 
  instance Renderizable Explosion where
-    render b = translate' (getPos b) $ color (dark red) $ rectangleSolid 50 50
-
+    render b = translate' (getPos b) (spriteExplosion b)                    
+    
  instance Movable Explosion where
     setPos pos ex = ex {explosionPosition = pos}
     setDir dir ex = ex {explosionDirection = dir}
@@ -87,11 +87,15 @@ module Model.GameObject where
  setExplosionDestructed ex = ex {explosionStatus = Destructed }
 
  addExplosion :: Pos -> Explosions
- addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]]
+ addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]] ++
+                            [ Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = North, explosionStatus = Mid, spriteExplosion = png "res/explosion-center-5.png"}                            ]
 
  newEx :: Pos -> Direction -> Explosion
- newEx pos dir = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = dir, explosionStatus = Moving, spriteExplosion = png "res/bomb-1.png"}
-
+ newEx pos North = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = North, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-up-5.png"}
+ newEx pos East = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = East, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-right.png"}
+ newEx pos South = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = South, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-down-5.png"}
+ newEx pos West = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = West, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-left-5.png"}
+ 
 
  moveExplosion:: Explosion -> Explosion
  moveExplosion ex = let (x,y) = getPos ex in
