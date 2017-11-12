@@ -29,7 +29,7 @@ setNewGoalWhenCollision gs e = e { goal = newGoal, playerDirection = getDirectio
 
 -- Move the player/enemy to a position and change it's direction
 moveEnemyToPos :: GameState -> Player -> Pos -> GameState
-moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changePlayerDir gs (getDirectionFromPos enemy pos)
+moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changeEnemyDir gs (getDirectionFromPos enemy pos)
                         
 -- Modifies the gamestate of an enemy given a function that modifies ap layer
 modEnemy :: GameState -> Player -> (Player -> Player) -> GameState

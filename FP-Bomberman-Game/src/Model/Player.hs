@@ -55,12 +55,12 @@ instance Renderizable Player where
                 where newPos = (+.) (-5,15) $ getPos p
 
 initPlayer :: Player
-initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png") 1
+initPlayer = Player "Jerry" Alive (-370,370) 5 West (0,0) Idle (png "res/bomberman-idle.png") 1
 
 
 initEnemies :: [Player]
 initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0 ,
-               Player "Monstertje2" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0 ]
+               Player "Monstertje2" Alive (275, -375) 5 South (225, -375) Walking (png "res/enemy-idle-down-1.png") 0 ]
 
 
 --if no collision occurs, move player in the direction he is facing
