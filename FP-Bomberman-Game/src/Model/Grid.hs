@@ -134,7 +134,6 @@ level1 = [
     -- end row 5
     Field (-425, 175) MetalBlock,
     Field (-325, 175) StoneBlock,
-    Field (-275, 175) StoneBlock,
     Field (-125, 175) StoneBlock,
     Field (-25, 175) StoneBlock,
     Field (75, 175) StoneBlock,

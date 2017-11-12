@@ -174,8 +174,9 @@ module Model.GameState where
     --ENEMIES VS PLAYER--
     checkCollisionEnemies :: Player -> [Player] -> Bool
     checkCollisionEnemies p [] = False
-    checkCollisionEnemies p (x:xs) | checkCollision p x     = True
-                                   | otherwise               = checkCollisionEnemies p xs
+    checkCollisionEnemies p (x:xs) | checkCollision p x && enemyState == Alive     = True
+                                   | otherwise                                     = checkCollisionEnemies p xs
+                                   where enemyState = health x
     
     --PLAYERS VS GRID--
     --change the direction in which the player is positioned and possibly move player in that direction
