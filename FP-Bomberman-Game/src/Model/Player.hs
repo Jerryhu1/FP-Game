@@ -81,7 +81,7 @@ movePlayerInDir player' = case playerDirection player' of
 --move player given a new position
 calcNewPos :: Pos -> Player -> Pos
 calcNewPos (x,y) player' = getBound posTimesVel $ getPos player'
-                         where  f = \x -> x * (min 30 $ velocity player')
+                         where  f x = x * min 30 (velocity player')
                                 posTimesVel = (f x, f y )
                                
 

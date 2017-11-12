@@ -38,7 +38,7 @@ instance Renderizable PowerUp where
 --FasterBomb    : decreases time till a bomb explodes
 applyEffectOnPlayer :: PowerUp -> Player -> Player
 applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = min 15 (5 + velocity pl)}
-applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : (timeTillNewBomb pl)}
+applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : timeTillNewBomb pl}
 applyEffectOnPlayer (PowerUp _ FasterBomb) pl   = pl { timeTillExplosionPlayer = max 12 $(timeTillExplosionPlayer pl)-5}
 
 

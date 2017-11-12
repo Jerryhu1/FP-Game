@@ -23,11 +23,8 @@ data Field = Field {
 instance Show Field where
     show f = show(fieldPosition f) ++ " Object: " ++ show(gameObject f)
 
-numGridX :: Int
-numGridX = 15
-
-numGridY :: Int
-numGridY = 13
+instance Renderizable Field where
+    render f = translate' (getPos f) (render $ gameObject f)  
 
 fieldSize :: Int
 fieldSize = 50
@@ -44,33 +41,8 @@ instance HasArea Field where
     inArea f (x,y) = x1 <= x && x <= x2 && y2 <= y && y <= y1
         where   (x1,y1) = getPos f
                 (x2,y2) = (x1+ width f,y1-height f)
+                
 
-{-
-Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x
-TO-DO: Integrate setBlocks with createGrid
-
-createGrid :: Grid
-createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) MetalBlock| y <- [0..numGridY-1], x <- [0..numGridX-1]]
-
-setFieldPosToPixels :: Field -> Field
-setFieldPosToPixels f = Field { fieldPosition = (-375+50 * xPos , 375-50* yPos), gameObject = gameObject f }
-                        where (xPos, yPos) = getPos f
-
-    If position is uneven, draw a metal block, otherwise grass
-
-setBlocks :: Grid -> Grid
-setBlocks []     = []
-setBlocks (x:xs) | odd(xPos * yPos)  = Field (getPos x) MetalBlock : setBlocks xs
-                 | otherwise = x : setBlocks xs
-          where (xPos, yPos) = getPos x
-
-
-
-addGameObject :: Field -> Grid -> Grid
-addGameObject newField [] = []
-addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
-                              | otherwise                                   = x : addGameObject newField xs
--}
 
 level1 :: Grid
 level1 = [
