@@ -13,5 +13,4 @@ genNumberByRange gs (min,max)
       = let (n, g') = randomR (min,max) (gen gs)
             in (n, gs { gen = g'})
 
-getRNumber :: IO Int
-getRNumber = getStdRandom (randomR(1,100))
+
