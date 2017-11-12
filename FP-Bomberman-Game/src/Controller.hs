@@ -7,7 +7,6 @@ import Model.Player
 import Model.Typeclasses.Positioned
 import Model.Grid
 import Model.EnemyLogic
-import Model.Random
 import Model.GameObject
 import Model.Log
 
@@ -35,7 +34,7 @@ updateDynamics:: GameState -> GameState
 updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkifMovePlayer gstate
                       | otherwise                 = update gstate
       where update = moveEnemies . createRandomness . modifyDynamics
-            createRandomness = \gs ->  snd $ withRandom (randomR (0,3)) gs
+            createRandomness = \gs ->  snd $ withRandom next gs
             moveEnemies = \gs -> foldl moveEnemy gs (enemies gs)
             --functies moveEnemies + createRandomness staan beter in een nieuwe functie modEnemies
             --zie functie modPlayer
@@ -62,7 +61,7 @@ inputKeyRunning (EventKey c Down _ _) gstate
     | c == SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
     | c == SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c == SpecialKey KeyEsc    = gstate { currentState = Paused }
-    | c == Char ',' = modBombs gstate $ addBombs (getGridPos $ player gstate)
+    | c == Char ','             = checkIfDropBomb gstate $ player gstate
 inputKeyRunning (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
 inputKeyRunning _ gstate = gstate
 

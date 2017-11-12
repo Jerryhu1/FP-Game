@@ -89,22 +89,23 @@ module Model.GameState where
     modEnemies :: GameState -> (Player -> Player) -> GameState
     modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
 
-
     modPowerUps :: GameState -> (SpeedBoost -> SpeedBoost) -> GameState
     modPowerUps gstate f = gstate {speedBoosts = map f (speedBoosts gstate) }
 
     modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | length (explosions gs) > 0      = update $ modifyBombs gs
-                      | otherwise                       = modifyBombs gs
+    modifyDynamics gs | length (explosions gs) > 0      = updateRNG $ update $ modifyBombs gs
+                      | otherwise                       =  modifyBombs gs
                     where update = modifyPlayer . modifyEnemies . modifyPowerUps . modifyGrid 
                           modifyPlayer = \g -> modPlayer g $ checkCollisionExplosions $ explosions g
                           modifyEnemies = \g -> modEnemies g $ checkCollisionExplosions $ explosions g
                           modifyGrid = \g -> g {grid = foldl checkDestruction (grid g) (explosions g)}
                           modifyPowerUps = \g -> g {speedBoosts = foldl checkPowerDestruction (speedBoosts g) (explosions g)}
-                          
+
+    updateRNG :: GameState -> GameState
+    updateRNG gs = snd $ withRandom next gs
                           
     modifyBombs :: GameState -> GameState                      
-    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, speedBoosts = speedTot, player = newPlayer}
+    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, speedBoosts = speedTot, player = timerCountDownPlayer newPlayer}
             where (newBombs, newExplosions) = setTimerBombs (bombs gs)
                   (newOldExplosions, newSpeedBoosts) = modOldExplosions (grid gs) (gen gs) (explosions gs)
                   explosionsTot = newExplosions ++ newOldExplosions
@@ -132,23 +133,24 @@ module Model.GameState where
     checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed
                                             = (ex, [])
                                     | checkCollision ex x && gameObject x == StoneBlock
-                                            = (setExplosionDestructed $ moveExplosion ex, dropSpeedBoost gen $ getPos x)
+                                            = (setExplosionDestructed $ moveExplosion ex, dropSpeedBoost (snd $ next gen) $ getPos x)
                                     | checkCollision ex x        = (setExplosionDestructed $ moveExplosion ex, [])
-                                    | otherwise                  = checkCollisionEx gen xs ex
+                                    | otherwise                  = checkCollisionEx (snd $ next gen) xs ex
     
     dropSpeedBoost:: StdGen -> Pos -> [SpeedBoost]
-    dropSpeedBoost gen pos = [addNewSpeedBoost pos]
-                        --do 
-                          --  rng <- getRNumber
-                            --if rng > 70 then return [addNewSpeedBoost pos] else return []
+    dropSpeedBoost gen pos | rng > 70 =  [addNewSpeedBoost pos]
+                           | otherwise = []
+                            where rng = fst $ randomR (0,100) gen :: Int
 
-    
+
+    --PLAYER VS BOMBS--
+    checkIfDropBomb :: GameState -> Player -> GameState
+    checkIfDropBomb gstate pl | timeTillNewBomb pl == 0 = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) (setTimerPlayer 24)
+                              | otherwise               = gstate
+
     --COLLISION DETECTION --
     --BOMBS VS GRID--
-    
-    
-    --   checkDestructionBlocks :: Explosions -> Grid -> Grid
-    --   checkDestructionBlocks ex grid = foldl checkDestruction grid ex
+
     
     checkDestruction :: Grid -> Explosion -> Grid
     checkDestruction [] b = []
@@ -161,7 +163,7 @@ module Model.GameState where
     checkPowerDestruction (x:xs) b | explosionStatus b == Moving && inArea b (getPos x) = xs
                                    | otherwise           = x : checkPowerDestruction xs b
     
-    --BOMBS VS PLAYER--
+    --EXPLOSIONS VS PLAYER--
     checkCollisionExplosions :: Explosions -> Player -> Player
     checkCollisionExplosions [] p     = p
     checkCollisionExplosions (x:xs) p   | checkCollision p x                   = setPlayerDead p
@@ -236,7 +238,21 @@ module Model.GameState where
     updateElapsedTime :: GameState -> GameState
     updateElapsedTime gs = gs {elapsedTime = (elapsedTime gs) + 0.16}
 
-            
+
+    withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)
+    withRandom f gs = let (res, g') = f (gen gs)
+                        in ( res, gs { gen = g'} )
+
+    genNumberByRange :: GameState -> (Int,Int) -> (Int, GameState)
+    genNumberByRange gs (min,max)
+          = let (n, g') = randomR (min,max) (gen gs)
+                in (n, gs { gen = g'})
+
+    getRNumber :: IO Int
+    getRNumber = getStdRandom (randomR(1,100))
+
+
+
 {- These functions are used for generating random maps
                             
     Generates random blocks by RNG in Gamestate

@@ -19,7 +19,7 @@ data Player = Player {
             goal :: Pos,
             state :: PlayerState,
             sprite :: Picture,
-            bombAmount :: Int
+            timeTillNewBomb :: Int
         }deriving(Eq)
 
 data PlayerState = Walking | Idle | Dying deriving (Eq, Show)
@@ -59,8 +59,9 @@ initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomber
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0,
-               Player "Monstertje2" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0]
+initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0 ,
+               Player "Monstertje2" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0 ]
+
 
 --if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -85,6 +86,13 @@ getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
             f = \x -> x - ((x-25) `mod` fieldSize)
+
+timerCountDownPlayer :: Player -> Player
+timerCountDownPlayer pl  | timeTillNewBomb pl> 0 = pl {timeTillNewBomb = (timeTillNewBomb pl)-1}
+                         | otherwise             = pl
+
+setTimerPlayer :: Int -> Player -> Player
+setTimerPlayer n p = p {timeTillNewBomb = n}
 
 -- Returns a list of pictures that represent a walking direction
 playerWalkingPictures :: Player -> [Picture]

@@ -3,19 +3,19 @@ module Model.EnemyLogic where
 import Model.GameState
 import Model.Player
 import Model.Typeclasses.Positioned
-import Model.Random
 
 import System.Random
 
 -- Moves randomly through positions
 moveEnemy :: GameState -> Player -> GameState
-moveEnemy gs enemy | state enemy == Dying = gs
+moveEnemy gs enemy | state enemy == Dying = updateGs gs
                    | (goal enemy) /= (getPos enemy) && not (checkCollisionField enemy (grid gs) )
-                        = moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
+                        = updateGs $ moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
                    | (goal enemy) /= (getPos enemy) && checkCollisionField enemy (grid gs)
-                        = modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
+                        = updateGs $ modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
                    | otherwise
-                        = modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
+                        = updateGs $ modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
+                    where updateGs gs' = snd $ withRandom next gs'
 
 -- Sets a new goal for a given player / enemy
 setNewGoal :: GameState -> Player -> Player
@@ -38,7 +38,8 @@ modEnemy gstate enemy f = gstate { enemies = acc enemy f (enemies gstate) }
                       acc enemy f (x:[]) | enemy == x   = [f x]
                                          | otherwise    = error "Enemy doesn't exist?"
                       acc enemy f (x:xs) | enemy == x   = f x : xs
-                                         | otherwise    = x : (acc enemy f xs)  
+                                         | otherwise    = x : (acc enemy f xs)
+
 -- Sets the new goal based on the old goal
 getPath :: GameState -> Player -> Pos
 getPath gs p | rng == 0  = (oldX + 50, oldY)
