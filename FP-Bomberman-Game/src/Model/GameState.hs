@@ -160,7 +160,7 @@ module Model.GameState where
     
     
     
-     --BOMBS VS GRID--
+    --EXPLOSIONS VS GRID--
 
     --If Explosion collides with stoneBlock, remove stoneblock from grid
     checkDestruction :: Grid -> Explosion -> Grid
@@ -245,8 +245,9 @@ module Model.GameState where
     calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
                       | otherwise                  =  round (0.0 + (elapsedTime gs * 10.0))
 
-                      
+
     --CREATE RANDOM NUMBERS--
+
     --Used for enemy movement and powerups
     withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)
     withRandom f gs = let (res, g') = f (gen gs)
