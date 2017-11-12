@@ -94,7 +94,7 @@ module Model.GameState where
                           
                           
     modifyBombs :: GameState -> GameState                      
-    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, speedBoosts = speedTot, player = newPlayer}
+    modifyBombs gs = gs {bombs = newBombs, explosions = explosionsTot, speedBoosts = speedTot, player = timerCountDownPlayer newPlayer}
             where (newBombs, newExplosions) = setTimerBombs (bombs gs)
                   (newOldExplosions, newSpeedBoosts) = modOldExplosions (grid gs) (gen gs) (explosions gs)
                   explosionsTot = newExplosions ++ newOldExplosions
@@ -130,13 +130,14 @@ module Model.GameState where
                           --  rng <- getRNumber
                             --if rng > 70 then return [addNewSpeedBoost pos] else return []
 
-    
+    --PLAYER VS BOMBS--
+    checkIfDropBomb :: GameState -> Player -> GameState
+    checkIfDropBomb gstate pl | timeTillNewBomb pl == 0 = modPlayer (modBombs gstate $ addBombs $ getGridPos pl) (setTimerPlayer 24)
+                              | otherwise               = gstate
+
     --COLLISION DETECTION --
     --BOMBS VS GRID--
-    
-    
-    --   checkDestructionBlocks :: Explosions -> Grid -> Grid
-    --   checkDestructionBlocks ex grid = foldl checkDestruction grid ex
+
     
     checkDestruction :: Grid -> Explosion -> Grid
     checkDestruction [] b = []
@@ -149,7 +150,7 @@ module Model.GameState where
     checkPowerDestruction (x:xs) b | explosionStatus b == Moving && inArea b (getPos x) = xs
                                    | otherwise           = x : checkPowerDestruction xs b
     
-    --BOMBS VS PLAYER--
+    --EXPLOSIONS VS PLAYER--
     checkCollisionExplosions :: Explosions -> Player -> Player
     checkCollisionExplosions [] p     = p
     checkCollisionExplosions (x:xs) p   | checkCollision p x                   = setPlayerDead p

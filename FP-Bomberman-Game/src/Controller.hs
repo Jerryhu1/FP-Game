@@ -48,7 +48,7 @@ inputKey (EventKey c Down _ _) gstate
     | c == SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
     | c == SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c == SpecialKey KeyEsc    = gstate { currentState = Paused }
-    | c == Char ','             = modBombs gstate $ addBombs (getGridPos $ player gstate)
+    | c == Char ','             = checkIfDropBomb gstate $ player gstate
 
 inputKey (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
 inputKey _ gstate = gstate
