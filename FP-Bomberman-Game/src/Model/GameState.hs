@@ -2,8 +2,8 @@ module Model.GameState where
     
     import System.Random
     import Graphics.Gloss.Game
-    import Data.List
-    import Data.Maybe
+    import Data.List (elemIndex)
+    import Data.Maybe (fromJust)
     
     import Model.Typeclasses.Renderizable
     import Model.Typeclasses.Positioned

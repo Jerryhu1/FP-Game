@@ -1,7 +1,7 @@
 module Model.Log where
 
 import Model.GameState
-import Control.Monad
+import Control.Monad (when)
 
 readCurrentHighscore :: IO String
 readCurrentHighscore = readFile "res/score.txt"

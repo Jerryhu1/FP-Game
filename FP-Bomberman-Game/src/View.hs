@@ -6,10 +6,8 @@ import Graphics.Gloss.Game
 
 import Model.GameState
 import Model.Grid
-import Model.Bombs
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
-import Model.Player
 import Model.Log
 
 view :: GameState -> IO Picture

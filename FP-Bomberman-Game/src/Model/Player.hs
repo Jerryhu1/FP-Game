@@ -1,8 +1,8 @@
 module Model.Player where    
 
 import Graphics.Gloss.Game
-import Data.Maybe
-import Data.List
+import Data.Maybe (fromJust, isJust, isNothing)
+import Data.List (elemIndex)
 
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
