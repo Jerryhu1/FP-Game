@@ -5,8 +5,6 @@ module Model.Bombs where
  import Model.Typeclasses.Positioned
  import Model.Typeclasses.Renderizable
 
-
-
  ---BOMBS---
  data Bomb = Bomb {
                     bombPosition :: Pos,
