@@ -11,7 +11,7 @@ module Model.GameState where
     import Model.Player
     import Model.PowerUp
     import Model.Grid
-    import Model.GameObject
+    import Model.Bombs
     
     --General--
     data GameState = GameState {

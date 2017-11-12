@@ -6,7 +6,7 @@ import Graphics.Gloss.Game
 
 import Model.GameState
 import Model.Grid
-import Model.GameObject
+import Model.Bombs
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
 import Model.Player
