@@ -4,16 +4,27 @@ module View where
 
 import Graphics.Gloss.Game
 
-
 import Model.GameState
 import Model.Grid
 import Model.GameObject
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
 import Model.Player
+import Model.Log
 
 view :: GameState -> IO Picture
-view = return . viewPure
+view gs = do
+            if(currentState gs == Running) then return $ viewPure gs
+            else do
+                hs <- drawHighScore
+                let pics = pictures [viewPure gs, hs]
+                return pics
+
+drawHighScore :: IO Picture
+drawHighScore = do
+                    highScore <- readCurrentHighscore
+                    let showScore = translate' (180, -100) $ scale 0.5 0.5 $ color white $ text highScore
+                    return showScore
 
 viewPure :: GameState -> Picture
 viewPure gstate  = pictures [

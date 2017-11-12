@@ -62,7 +62,7 @@ handleInput ev gs
         | currentState gs == Running && playerState /= Dying = inputKeyRunning ev gs
         | currentState gs == Paused                          = inputKeyPaused ev gs
         | currentState gs == GameOver                        = inputKeyMenu ev gs
-        | currentState gs == Victory                         = inputKeyVictory ev gs
+        | currentState gs == Victory                         = inputKeyMenu ev gs
         | otherwise                                          = gs
             where playerState = state $ player gs
 
@@ -74,15 +74,10 @@ inputKeyPaused _ gstate = gstate
 
 inputKeyMenu :: Event -> GameState -> GameState
 inputKeyMenu (EventKey c Down _ _) gstate
-                | c == Char 'y'       = initGame
-                | c == Char 'n'       = error "Much noob very wow"
-inputKeyMenu _ gstate = gstate
-
-inputKeyVictory :: Event -> GameState -> GameState
-inputKeyVictory (EventKey c Down _ _) gstate
                 | c == SpecialKey KeyEsc       = undefined
                 | c == SpecialKey KeySpace     = initGame
-inputKeyVictory _ gstate = gstate
+inputKeyMenu _ gstate = gstate
+
 
 setKeyState :: KeyState -> GameState -> GameState
 setKeyState k gstate = gstate { keyState = k}

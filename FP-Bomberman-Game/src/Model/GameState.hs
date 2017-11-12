@@ -32,7 +32,7 @@ module Model.GameState where
     instance Renderizable GameState where
         render gs
                   | currentState gs == Paused   = pictures (pics ++ [png "res/pause-screen.png"] )
-                  | currentState gs == GameOver = pictures (pics ++ [png "res/lose-screen.png"])
+                  | currentState gs == GameOver = pictures (pics ++ [png "res/lose-screen.png", score])
                   | currentState gs == Victory  = pictures (pics ++ [png "res/victory-screen.png", score])
                   | otherwise = pictures pics
                   where pics = [ render $ player gs
@@ -84,10 +84,10 @@ module Model.GameState where
     -- Modify the state of a player using a function
     modPlayer :: GameState -> (Player -> Player) -> GameState
     modPlayer gstate f = gstate { player = f $ player gstate}
-    
+
     modEnemies :: GameState -> (Player -> Player) -> GameState
     modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
-    
+
     modifyDynamics :: GameState -> GameState
     modifyDynamics gs | length (explosions gs) > 0      = modifyPlayer $ modifySpeedBoosts modifyBombs
                       | length (speedBoosts gs) > 0     = modifySpeedBoosts modifyBombs
@@ -189,5 +189,7 @@ module Model.GameState where
     checkCollisionPowerup acc pl b@(x:xs) | checkCollision pl x = (acc++xs,applyEffectOnPlayer x pl)
                                           | otherwise           = checkCollisionPowerup (x:acc) pl xs
 
+    -- Calculates a score based on elapsed time
     calculateScore :: GameState -> Int
-    calculateScore gs =  round (20000.0 - (elapsedTime gs * 100.0))
+    calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
+                      | otherwise                  =  round (0.0 + (elapsedTime gs * 100.0))

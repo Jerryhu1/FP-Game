@@ -18,7 +18,8 @@ data Player = Player {
             playerDirection :: Direction,
             goal :: Pos,
             state :: PlayerState,
-            sprite :: Picture
+            sprite :: Picture,
+            bombAmount :: Int
         }deriving(Eq)
 
 data PlayerState = Walking | Idle | Dying deriving (Eq, Show)
@@ -54,11 +55,11 @@ instance Renderizable Player where
                 where newPos = (+.) (-5,15) $ getPos p
 
 initPlayer :: Player
-initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png")
+initPlayer = Player "Jerry" Alive (-370,370) 10 West (0,0) Idle (png "res/bomberman-idle.png") 1
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje" Alive (375,370) 5 South (225, 75) Idle (png "res/enemy-idle-down-1.png")]
+initEnemies = [Player "Monstertje" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 0]
 
 --if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player

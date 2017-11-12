@@ -56,7 +56,7 @@ getPathWhenCollision gs p | rng == 0  = (oldX + 50, oldY)
                           | rng == 2  = (oldX, oldY + 50)
                           | otherwise  = (oldX, oldY - 50)
                             where rng :: Int
-                                  rng = fst $ withRandom (randomR (0,3)) gs
+                                  rng = fst $ genNumberByRange gs (0,3)
                                   (oldX,oldY) = playerPosition p
 
 -- Gets the direction when moving towards a position

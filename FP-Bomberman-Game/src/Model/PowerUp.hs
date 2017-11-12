@@ -1,6 +1,7 @@
 module Model.PowerUp where
 
 import Graphics.Gloss
+import Graphics.Gloss.Game
 
 import Model.Typeclasses.Positioned
 import Model.Typeclasses.Renderizable
@@ -37,7 +38,7 @@ data SpeedBoost = SpeedBoost {
                   }deriving(Show, Eq)
 
 instance Renderizable SpeedBoost where
-        render s = translate' (speedBoostPosition s) (color blue $ rectangleSolid 50.0 50.0)
+        render s = translate' (speedBoostPosition s) $ png "res/powerup-speed-boost.png"
 
 instance Positioned SpeedBoost where
         getPos b = speedBoostPosition b
@@ -53,7 +54,7 @@ instance Effectable SpeedBoost where
         applyEffectOnPlayer s pl = pl { velocity = (velocity pl + (speedBoostAmount s))}
 
 addNewSpeedBoost :: Pos -> SpeedBoost
-addNewSpeedBoost pos = SpeedBoost {speedBoostPosition = pos, speedBoostAmount = 10}
+addNewSpeedBoost pos = SpeedBoost {speedBoostPosition = pos, speedBoostAmount = 5}
 
 data ExtraBomb = ExtraBomb {
     extraBombPosition :: Pos
