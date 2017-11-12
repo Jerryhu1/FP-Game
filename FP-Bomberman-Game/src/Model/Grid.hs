@@ -1,8 +1,19 @@
 module Model.Grid where
 
+import Graphics.Gloss.Game
+    
+
 import Model.Typeclasses.Positioned
-import Model.GameObject
+import Model.Typeclasses.Renderizable
 import System.Random
+
+data GameObject =   MetalBlock| StoneBlock
+    deriving(Show, Ord, Eq)
+
+instance Renderizable GameObject where
+    render MetalBlock = png "res/metal-block.png"
+    render StoneBlock = png "res/stone-block.png"
+
 
 data Field = Field {
     fieldPosition :: Pos,

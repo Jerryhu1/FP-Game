@@ -7,7 +7,7 @@ import Model.Player
 import Model.Typeclasses.Positioned
 import Model.Grid
 import Model.EnemyLogic
-import Model.GameObject
+import Model.Bombs
 import Model.Log
 
 import Graphics.Gloss

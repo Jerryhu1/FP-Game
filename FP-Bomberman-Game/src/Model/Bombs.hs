@@ -1,4 +1,4 @@
-module Model.GameObject where
+module Model.Bombs where
 
  import Graphics.Gloss.Game
 
@@ -6,19 +6,7 @@ module Model.GameObject where
  import Model.Typeclasses.Renderizable
 
 
- data GameObject =   MetalBlock
-                    | StoneBlock
-                    deriving(Show, Ord, Eq)
 
- instance Renderizable GameObject where
-        render MetalBlock = png "res/metal-block.png"
-        render StoneBlock = png "res/stone-block.png"
-
-
-
- makeExplosions :: Bombs -> Explosions
- makeExplosions = concatMap (addExplosion . getPos)
- 
  ---BOMBS---
  data Bomb = Bomb {
                     bombPosition :: Pos,
@@ -41,17 +29,22 @@ module Model.GameObject where
  instance Renderizable Bomb where
     render b = translate' (getPos b) (spriteBomb b)                    
 
-
+ --adds a new bomb
  addBombs :: Pos -> Bombs -> Bombs
  addBombs pos bs = Bomb {bombPosition = pos, timeTillExplosion = 24, spriteBomb = png "res/bomb-1.png"} : bs
 
-
+ --countdown till a bomb turns into an explosion
  explosionCountDown :: Bomb -> Bomb
  explosionCountDown bomb = bomb {timeTillExplosion = timeTillExplode}
     where timeTillExplode = timeTillExplosion bomb - 1
 
+ --if the timer on a bomb runs out, turn the bomb into an explosion
+ --controlled from function setTimerBombs in GameState.hs
+ makeExplosions :: Bombs -> Explosions
+ makeExplosions = concatMap (addExplosion . getPos)
 
  ---EXPLOSIONS--
+
  data Explosion = Explosion {
     explosionPosition :: Pos,
     explosionTime :: Float,
@@ -83,9 +76,13 @@ module Model.GameObject where
     setDir dir ex = ex {explosionDirection = dir}
     getDir  = explosionDirection
 
+ --if an explosion collides with a stoneblock, change the explosion status
+ --this will make sure explosion can't destroy any more blocks
  setExplosionDestructed :: Explosion -> Explosion
  setExplosionDestructed ex = ex {explosionStatus = Destructed }
 
+ --adds explosion on a position once the timer on a bomb has run out
+ --5 explosions are dropped: one for each direction the explosion moves and one for a non-moving explosion centre
  addExplosion :: Pos -> Explosions
  addExplosion pos = [newEx pos dir | dir <- [North, East, South, West]] ++
                             [ Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = North, explosionStatus = Mid, spriteExplosion = png "res/explosion-center-5.png"}                            ]
@@ -96,7 +93,7 @@ module Model.GameObject where
  newEx pos South = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = South, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-down-5.png"}
  newEx pos West = Explosion { explosionPosition = pos, explosionTime = 9, explosionDirection = West, explosionStatus = Moving, spriteExplosion = png "res/explosion-end-left-5.png"}
  
-
+ --if there is no collision with a metal block, the explosion moves in a certain direction
  moveExplosion:: Explosion -> Explosion
  moveExplosion ex = let (x,y) = getPos ex in
                     case getDir ex of 
@@ -105,6 +102,7 @@ module Model.GameObject where
                         South -> setPos (x,y-5) ex
                         West -> setPos (x-5,y) ex
 
+ --countdown till an explosion runs out
  setTimerExplosion :: Explosions -> Explosions
  setTimerExplosion ex = filter (\ex -> explosionTime ex > 0) $ map explosionCountDown' ex
  
