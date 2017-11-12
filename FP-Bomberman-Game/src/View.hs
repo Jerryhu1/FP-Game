@@ -13,8 +13,7 @@ import Model.Player
 import Model.Log
 
 view :: GameState -> IO Picture
-view gs = do
-            if(currentState gs == Running) then return $ viewPure gs
+view gs =   if currentState gs == Running then return $ viewPure gs
             else do
                 hs <- drawHighScore
                 let pics = pictures [viewPure gs, hs]
@@ -46,19 +45,9 @@ drawGrid grid = pictures $ map drawBox grid
                 where fieldToDraw = map drawField grid
                       drawBox field = translate' (getPos field) (drawField field)
 
-drawBombs :: Bombs -> Picture
-drawBombs bombs = pictures $ map drawBombs bombs
-                    where drawBombs bomb = translate' (getPos bomb) (drawBomb bomb)
-
-drawBomb :: Bomb -> Picture
-drawBomb b = render b
-
-drawExplosion :: Explosion -> Picture
-drawExplosion b =  color (dark red) $ rectangleSolid blockSize blockSize
-
 
 setPosToPixels :: Pos -> Pos
-setPosToPixels p = ((-375+xPos ),(375- yPos ))
+setPosToPixels p = (-375+xPos ,375 - yPos )
                         where xPos = fst p
                               yPos = snd p
 

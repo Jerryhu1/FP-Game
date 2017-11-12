@@ -1,11 +1,11 @@
 module Model.Log where
 
 import Model.GameState
+import Control.Monad
 
 readCurrentHighscore :: IO String
-readCurrentHighscore = do
-                  content <- readFile "res/score.txt"
-                  return content
+readCurrentHighscore = readFile "res/score.txt"
+
 
 printCollision :: GameState -> String
 printCollision gs = show $ checkCollisionField (player gs) (grid gs)
@@ -15,7 +15,5 @@ writeNewHighScore score =
                      do
                         oldScore <- readCurrentHighscore
                         let intOldScore = read oldScore :: Int
-                        if score > intOldScore
-                        then writeFile "res/score.txt" $ show score
-                        else return ()
+                        when (score > intOldScore)$ writeFile "res/score.txt" $ show score
 

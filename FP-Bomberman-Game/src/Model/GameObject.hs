@@ -17,7 +17,7 @@ module Model.GameObject where
 
 
  makeExplosions :: Bombs -> Explosions
- makeExplosions bs = concat $ map (\x -> addExplosion $ getPos x) bs
+ makeExplosions = concatMap (addExplosion . getPos)
  
  ---BOMBS---
  data Bomb = Bomb {
@@ -29,7 +29,7 @@ module Model.GameObject where
  type Bombs = [Bomb]
 
  instance Positioned Bomb where
-    getPos b = bombPosition b
+    getPos = bombPosition
 
  instance HasArea Bomb where
     width b = 49
@@ -48,7 +48,7 @@ module Model.GameObject where
 
  explosionCountDown :: Bomb -> Bomb
  explosionCountDown bomb = bomb {timeTillExplosion = timeTillExplode}
-    where timeTillExplode = (timeTillExplosion bomb)-1
+    where timeTillExplode = timeTillExplosion bomb - 1
 
 
  ---EXPLOSIONS--
@@ -66,7 +66,7 @@ module Model.GameObject where
  type Explosions = [Explosion]
 
  instance Positioned Explosion where
-    getPos b = explosionPosition b
+    getPos = explosionPosition
 
  instance HasArea Explosion where
     width f = 49
@@ -81,7 +81,7 @@ module Model.GameObject where
  instance Movable Explosion where
     setPos pos ex = ex {explosionPosition = pos}
     setDir dir ex = ex {explosionDirection = dir}
-    getDir ex = explosionDirection ex
+    getDir  = explosionDirection
 
  setExplosionDestructed :: Explosion -> Explosion
  setExplosionDestructed ex = ex {explosionStatus = Destructed }
@@ -106,7 +106,7 @@ module Model.GameObject where
  
  explosionCountDown' :: Explosion -> Explosion
  explosionCountDown' ex = ex {explosionTime = timeTillExplode}
-     where timeTillExplode = (explosionTime ex)-1
+     where timeTillExplode = explosionTime ex - 1
 
 
 

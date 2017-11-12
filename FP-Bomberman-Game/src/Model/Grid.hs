@@ -24,7 +24,7 @@ fieldSize = 50
 type Grid = [Field]
 
 instance Positioned Field where
-     getPos f = fieldPosition f
+     getPos = fieldPosition
 
 
 instance HasArea Field where
@@ -42,14 +42,14 @@ createGrid :: Grid
 createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) MetalBlock| y <- [0..numGridY-1], x <- [0..numGridX-1]]
 
 setFieldPosToPixels :: Field -> Field
-setFieldPosToPixels f = Field { fieldPosition = ((-375+50 * xPos ) , (375-50* yPos ) ), gameObject = gameObject f }
+setFieldPosToPixels f = Field { fieldPosition = (-375+50 * xPos , 375-50* yPos), gameObject = gameObject f }
                         where (xPos, yPos) = getPos f
 {-
     If position is uneven, draw a metal block, otherwise grass
 -}
 setBlocks :: Grid -> Grid
 setBlocks []     = []
-setBlocks (x:xs) | odd(xPos * yPos)  = (Field (getPos x) MetalBlock) : setBlocks xs
+setBlocks (x:xs) | odd(xPos * yPos)  = Field (getPos x) MetalBlock : setBlocks xs
                  | otherwise = x : setBlocks xs
           where (xPos, yPos) = getPos x
 

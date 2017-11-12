@@ -27,7 +27,7 @@ handleGameState gstate   | currentState gstate == Loading   = return $ gstate {c
                          | currentState gstate == Victory || currentState gstate == GameOver
                                         = do writeNewHighScore $ calculateScore gstate
                                              return gstate
-                         | otherwise        = return $ gstate
+                         | otherwise        = return gstate
 
 handleAnimation :: GameState -> GameState
 handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
@@ -37,8 +37,8 @@ updateDynamics:: GameState -> GameState
 updateDynamics gstate | keyState gstate == Down   = update . modPlayer gstate $ checkIfMovePlayer gstate
                       | otherwise                 = update gstate
       where update = moveEnemies . createRandomness . modifyDynamics
-            createRandomness = \gs ->  snd $ withRandom next gs
-            moveEnemies = \gs -> foldl moveEnemy gs (enemies gs)
+            createRandomness gs = snd $ withRandom next gs
+            moveEnemies gs = foldl moveEnemy gs (enemies gs)
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState

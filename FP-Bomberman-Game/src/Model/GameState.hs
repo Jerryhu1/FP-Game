@@ -90,13 +90,13 @@ module Model.GameState where
     modPowerUps gstate f = gstate {powerUps = map f (powerUps gstate) }
 
     modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | length (explosions gs) > 0      = updateRNG $ update $ modifyBombs gs
+    modifyDynamics gs | not(null (explosions gs))       = updateRNG $ update $ modifyBombs gs
                       | otherwise                       =  modifyBombs gs
                     where update = modifyPlayer . modifyEnemies . modifyPowerUps . modifyGrid 
-                          modifyPlayer = \g -> modPlayer g $ checkCollisionExplosions $ explosions g
-                          modifyEnemies = \g -> modEnemies g $ checkCollisionExplosions $ explosions g
-                          modifyGrid = \g -> g {grid = foldl checkDestruction (grid g) (explosions g)}
-                          modifyPowerUps = \g -> g {powerUps = foldl checkPowerDestruction (powerUps g) (explosions g)}
+                          modifyPlayer g = modPlayer g $ checkCollisionExplosions $ explosions g
+                          modifyEnemies g = modEnemies g $ checkCollisionExplosions $ explosions g
+                          modifyGrid g = g {grid = foldl checkDestruction (grid g) (explosions g)}
+                          modifyPowerUps g =  g {powerUps = foldl checkPowerDestruction (powerUps g) (explosions g)}
 
     updateRNG :: GameState -> GameState
     updateRNG gs = snd $ withRandom next gs
@@ -237,11 +237,11 @@ module Model.GameState where
                 where allDead = all ( == Dead) (map health (enemies gs))
 
     checkIfEnemiesLeft :: GameState -> GameState
-    checkIfEnemiesLeft gs | length (filter ( == Alive ) (map health (enemies gs ))) > 0  = gs
-                        | otherwise                         = gs { currentState = GameOver}
+    checkIfEnemiesLeft gs | not (any ( == Alive ) (map health (enemies gs )))  = gs
+                          | otherwise                         = gs { currentState = GameOver}
 
     updateElapsedTime :: GameState -> GameState
-    updateElapsedTime gs = gs {elapsedTime = (elapsedTime gs) + 0.16}
+    updateElapsedTime gs = gs {elapsedTime = elapsedTime gs + 0.16}
 
 
     withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)

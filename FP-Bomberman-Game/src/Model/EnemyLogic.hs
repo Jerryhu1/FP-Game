@@ -9,9 +9,9 @@ import System.Random
 -- Moves randomly through positions
 moveEnemy :: GameState -> Player -> GameState
 moveEnemy gs enemy | state enemy == Dying = updateGs gs
-                   | (goal enemy) /= (getPos enemy) && not (checkCollisionField enemy (grid gs) )
+                   | goal enemy /= getPos enemy && not (checkCollisionField enemy (grid gs) )
                         = updateGs $ moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
-                   | (goal enemy) /= (getPos enemy) && checkCollisionField enemy (grid gs)
+                   | goal enemy /= getPos enemy && checkCollisionField enemy (grid gs)
                         = updateGs $ modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
                    | otherwise
                         = updateGs $ modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
@@ -35,10 +35,10 @@ moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changeEnemyDir gs (getDirectio
 modEnemy :: GameState -> Player -> (Player -> Player) -> GameState
 modEnemy gstate enemy f = gstate { enemies = acc enemy f (enemies gstate) }
                 where acc :: Player -> (Player -> Player) -> [Player] -> [Player]
-                      acc enemy f (x:[]) | enemy == x   = [f x]
+                      acc enemy f [x] | enemy == x   = [f x]
                                          | otherwise    = error "Enemy doesn't exist?"
                       acc enemy f (x:xs) | enemy == x   = f x : xs
-                                         | otherwise    = x : (acc enemy f xs)
+                                         | otherwise    = x : acc enemy f xs
 
 -- Sets the new goal based on the old goal
 getPath :: GameState -> Player -> Pos

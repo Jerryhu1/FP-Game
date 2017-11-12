@@ -27,13 +27,13 @@ data PlayerState = Walking | Idle | Dying deriving (Eq, Show)
 data Health = Dead | Alive deriving (Eq, Show)
 
 instance Positioned Player where
-    getPos p = playerPosition p
+    getPos = playerPosition
 
 
 instance Movable Player where
     setPos pos player = player { playerPosition = pos }
     setDir dir player = player { playerDirection = dir}
-    getDir player = playerDirection player
+    getDir            = playerDirection
 
 instance Show Player where
     show p = show(getPos p) ++ "Player: " ++ name p
@@ -86,7 +86,7 @@ getBound (x,y) (x',y') = (newX, newY)
 getGridPos:: Player -> Pos
 getGridPos p = (*.) midPosPlayer f
     where   midPosPlayer = (+.) (25,25) $ getPos p
-            f = \x -> x - ((x-25) `mod` fieldSize)
+            f x = x - ((x-25) `mod` fieldSize)
 
 timerCountDownPlayer :: Player -> Player
 timerCountDownPlayer pl = pl {timeTillNewBomb = map (\x -> max 0 (x-1)) $timeTillNewBomb pl }
@@ -103,7 +103,7 @@ replaceTimer n (x:xs) | x == 0    = n: xs
                     
 
 canDropBomb :: Player -> Bool
-canDropBomb pl  | elem 0 (timeTillNewBomb pl)   = True
+canDropBomb pl  | 0 `elem` timeTillNewBomb pl   = True
                 | otherwise                     = False
 
 -- Returns a list of pictures that represent a walking direction
@@ -137,9 +137,9 @@ animatePlayer p  | state p == Walking = animateWalkingPlayer p
 -- Animates a walking player, toggles between two different pictures when the player is walking
 animateWalkingPlayer :: Player -> Player
 animateWalkingPlayer p | isJust currentPic =
-                                if fromJust (currentPic) == 1
-                                then p { sprite = (playerWalkingPictures p !! 0) }
-                                else  p { sprite = (playerWalkingPictures p !! 1) }
+                                if fromJust currentPic == 1
+                                then p { sprite = head $ playerWalkingPictures p  }
+                                else  p { sprite = playerWalkingPictures p !! 1 }
                        | otherwise = p {sprite = head $ playerWalkingPictures p }
                             where dir = playerDirection p
                                   currentPic = elemIndex (sprite p) (playerWalkingPictures p)
@@ -151,4 +151,4 @@ animateDyingPlayer p | isNothing currentPicIndex                   = p { sprite 
                      | otherwise                                   = p {  sprite = nextPicture }
                     where frameAmount      = length $ playerDyingPictures p
                           currentPicIndex  = elemIndex (sprite p) (playerDyingPictures p)
-                          nextPicture      = (playerDyingPictures p) !! (fromJust currentPicIndex + 1)
+                          nextPicture      = playerDyingPictures p !! (fromJust currentPicIndex + 1)
