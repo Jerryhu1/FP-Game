@@ -9,9 +9,9 @@ import System.Random
 -- Moves randomly through positions
 moveEnemy :: GameState -> Player -> GameState
 moveEnemy gs enemy | state enemy == Dying = updateGs gs
-                   | goal enemy /= getPos enemy && not (checkCollisionField enemy (grid gs) )
+                   | goal enemy /= getPos enemy && not (checkCollisionSurr enemy (grid gs) )
                         = updateGs $ moveEnemyToPos gs enemy $ goal enemy          -- If goal is not yet met and there is no collision, keep walking
-                   | goal enemy /= getPos enemy && checkCollisionField enemy (grid gs)
+                   | goal enemy /= getPos enemy && checkCollisionSurr enemy (grid gs)
                         = updateGs $ modEnemy gs enemy (setNewGoalWhenCollision gs) -- If the goal is not met but there is a collision, set a new goal
                    | otherwise
                         = updateGs $ modEnemy gs enemy (setNewGoal gs)              -- The goal is met and there was no collision, set new goal
@@ -29,7 +29,7 @@ setNewGoalWhenCollision gs e = e { goal = newGoal, playerDirection = getDirectio
 
 -- Move the player/enemy to a position and change it's direction
 moveEnemyToPos :: GameState -> Player -> Pos -> GameState
-moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changeEnemyDir gs (getDirectionFromPos enemy pos)
+moveEnemyToPos gs enemy pos = modEnemy gs enemy $ changePlayerDir gs (getDirectionFromPos enemy pos)
                         
 -- Modifies the gamestate of an enemy given a function that modifies ap layer
 modEnemy :: GameState -> Player -> (Player -> Player) -> GameState

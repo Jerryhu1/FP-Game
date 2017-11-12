@@ -56,13 +56,13 @@ handleInput ev gs
 -- Handles the input when gamestate is running. Changes the state of the player
 inputKeyRunning :: Event -> GameState -> GameState
 inputKeyRunning (EventKey c Down _ _) gstate
-    | c == SpecialKey KeyUp     = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
-    | c == SpecialKey KeyLeft   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
-    | c == SpecialKey KeyDown   = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
-    | c == SpecialKey KeyRight  = setPlayerState Walking $ setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
+    | c == SpecialKey KeyUp     = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate North
+    | c == SpecialKey KeyLeft   = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate West
+    | c == SpecialKey KeyDown   = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate South
+    | c == SpecialKey KeyRight  = setKeyState Down $ modPlayer gstate $ changePlayerDir gstate East
     | c == SpecialKey KeyEsc    = gstate { currentState = Paused }
     | c == Char ','             = checkIfDropBomb gstate $ player gstate
-inputKeyRunning (EventKey (SpecialKey _) Up _ _) gstate = setPlayerState Idle $ gstate {keyState = Up}
+inputKeyRunning (EventKey (SpecialKey _) Up _ _) gstate = setKeyState Up gstate
 inputKeyRunning _ gstate = gstate
 
 -- Handles the input when the game is paused
