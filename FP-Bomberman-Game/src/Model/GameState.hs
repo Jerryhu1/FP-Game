@@ -81,18 +81,19 @@ module Model.GameState where
     modEnemies gstate f = gstate {enemies = map f (enemies gstate) }
     
     modifyDynamics :: GameState -> GameState
-    modifyDynamics gs | length (explosions gs) > 0      = modifyPlayer $ modifySpeedBoosts modifyBombs
-                      | length (speedBoosts gs) > 0     = modifySpeedBoosts modifyBombs
-                      | otherwise                       = modifyBombs
-                    where (newOldSpeedBoosts, newPlayer) = checkCollisionPowerup [] (player gs) $ speedBoosts gs   
-                          modifySpeedBoosts = \g -> g {player = newPlayer, speedBoosts = speedTot}                 
-                          modifyPlayer = \g -> modPlayer g $ checkCollisionBombs explosionsTot
-                          modifyBombs = gs {grid = newGrid, bombs = newBombs, explosions = explosionsTot}
-                          (newBombs, newExplosions) = setTimerBombs (bombs gs)
-                          (newOldExplosions, newSpeedBoosts) = modOldExplosions (grid gs) (explosions gs)
-                          newGrid = foldl checkDestruction (grid gs) newOldExplosions
-                          explosionsTot = newExplosions ++ newOldExplosions
-                          speedTot = newSpeedBoosts ++ newOldSpeedBoosts
+    modifyDynamics gs | length (explosions gs) > 0      = modifyEnemies $ modifyPlayer $ modifyBombs gs
+                      | otherwise                       = modifyBombs gs
+                    where modifyPlayer = \g -> modPlayer g $ checkCollisionBombs $ explosions g
+                          modifyEnemies = \g -> modEnemies g $ checkCollisionBombs $ explosions g
+                          
+    modifyBombs :: GameState -> GameState                      
+    modifyBombs gs = gs {grid = newGrid, bombs = newBombs, explosions = explosionsTot, speedBoosts = speedTot, player=newPlayer}
+            where (newBombs, newExplosions) = setTimerBombs (bombs gs)
+                  (newOldExplosions, newSpeedBoosts) = modOldExplosions (grid gs) (explosions gs)
+                  newGrid = foldl checkDestruction (grid gs) newOldExplosions
+                  explosionsTot = newExplosions ++ newOldExplosions
+                  speedTot = newSpeedBoosts ++ newOldSpeedBoosts
+                  (newOldSpeedBoosts, newPlayer) = checkCollisionPowerup [] (player gs) $ speedBoosts gs  
     
     
     setTimerBombs :: Bombs -> (Bombs,Explosions)
