@@ -37,16 +37,16 @@ instance HasArea Field where
 {-
 Creates a grid, since index starts at 0, both index are -1, y always has to be 2 less than x
 TO-DO: Integrate setBlocks with createGrid
--}
+
 createGrid :: Grid
 createGrid = map setFieldPosToPixels $ setBlocks [Field (x,y) MetalBlock| y <- [0..numGridY-1], x <- [0..numGridX-1]]
 
 setFieldPosToPixels :: Field -> Field
 setFieldPosToPixels f = Field { fieldPosition = (-375+50 * xPos , 375-50* yPos), gameObject = gameObject f }
                         where (xPos, yPos) = getPos f
-{-
+
     If position is uneven, draw a metal block, otherwise grass
--}
+
 setBlocks :: Grid -> Grid
 setBlocks []     = []
 setBlocks (x:xs) | odd(xPos * yPos)  = Field (getPos x) MetalBlock : setBlocks xs
@@ -54,11 +54,12 @@ setBlocks (x:xs) | odd(xPos * yPos)  = Field (getPos x) MetalBlock : setBlocks x
           where (xPos, yPos) = getPos x
 
 
+
 addGameObject :: Field -> Grid -> Grid
 addGameObject newField [] = []
 addGameObject newField (x:xs) | fieldPosition newField == fieldPosition x   = newField : addGameObject newField xs
                               | otherwise                                   = x : addGameObject newField xs
-
+-}
 
 level1 :: Grid
 level1 = [

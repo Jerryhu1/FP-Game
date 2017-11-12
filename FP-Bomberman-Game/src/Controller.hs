@@ -30,7 +30,7 @@ handleGameState gstate   | currentState gstate == Loading   = return $ gstate {c
                          | otherwise        = return gstate
 
 handleAnimation :: GameState -> GameState
-handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $  modPlayer (modEnemies gstate animatePlayer) animatePlayer
+handleAnimation gstate = checkPlayerVictory $ checkIfPlayerIsAlive $ modPlayer (modEnemies gstate animatePlayer) animatePlayer
 
 -- Update each object in the gamestate
 updateDynamics:: GameState -> GameState

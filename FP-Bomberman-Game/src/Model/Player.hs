@@ -19,7 +19,6 @@ data Player = Player {
             goal :: Pos,
             state :: PlayerState,
             sprite :: Picture,
-            explosionSpeed :: Int,
             timeTillExplosionPlayer :: Int,
             timeTillNewBomb :: [Int]
         }deriving(Eq)
@@ -58,15 +57,18 @@ instance Renderizable Player where
                         newPos = (x-5,y+15)
 
 initPlayer :: Player
-initPlayer = Player "Jerry" Alive (-370,370) 5 West (0,0) Idle (png "res/bomberman-idle.png") 1 24 [0]
+initPlayer = Player "Jerry" Alive (-370,370) 5 West (0,0) Idle (png "res/bomberman-idle.png") 24 [0]
 
 
 initEnemies :: [Player]
-initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 1 24 [0],
-               Player "Monstertje2" Alive (275, -375) 5 South (225, -375) Walking (png "res/enemy-idle-down-1.png") 1 24 [0] ]
+initEnemies = [Player "Monstertje1" Alive (375,370) 5 South (225, 75) Walking (png "res/enemy-idle-down-1.png") 24 [0],
+               Player "Monstertje2" Alive (275, -375) 5 South (225, -375) Walking (png "res/enemy-idle-down-1.png") 24 [0] ]
 
 setPlayerState :: PlayerState -> Player -> Player
 setPlayerState pState pl = pl { state = pState }
+
+
+--PLAYER MOVEMENT--
 
 --if no collision occurs, move player in the direction he is facing
 movePlayerInDir :: Player -> Player
@@ -75,28 +77,42 @@ movePlayerInDir player' = case playerDirection player' of
                                 East -> setPos (calcNewPos (1,0) player') player'
                                 North -> setPos (calcNewPos (0,1) player') player'
                                 South -> setPos (calcNewPos (0,-1) player') player'
---move player given a new 
+
+--move player given a new position
 calcNewPos :: Pos -> Player -> Pos
 calcNewPos (x,y) player' = getBound posTimesVel $ getPos player'
                          where  f = \x -> x * (min 30 $ velocity player')
                                 posTimesVel = (f x, f y )
                                
 
--- Get the boundaries of a given position
+-- Make sure player can't be positioned outside the grid
 getBound :: Pos -> Pos -> Pos
 getBound (x,y) (x',y') = (newX, newY)
     where newX = max (-375) $ min 375 $ x+x'
           newY = max (-225) $ min 375 $ y+y'
 
+--get the grid position of Player 
+--used for dropping bombs
 getGridPos:: Player -> Pos
 getGridPos p =  (f (x+25), f (y+25))
     where   (x,y) = getPos p
             f = \x -> x - ((x-25) `mod` fieldSize)
 
+--DROPPING BOMBS--
+
+--countdown till a new bomb can be dropped
+--updated every step
 timerCountDownPlayer :: Player -> Player
 timerCountDownPlayer pl = pl {timeTillNewBomb = map (\x -> max 0 (x-1)) $timeTillNewBomb pl }
 
+--tests if a player is able to drop a bomb
+--this is the case when one of the timers is equal to 0
+canDropBomb :: Player -> Bool
+canDropBomb pl  | 0 `elem` timeTillNewBomb pl   = True
+                | otherwise                     = False
 
+--if a bomb can be dropped, set one of the available timers to 24
+--the FasterBomb powerup lowers the time till a bomb explodes
 setTimerPlayer :: Player -> Player
 setTimerPlayer pl = pl {timeTillNewBomb = replaceTimer n $timeTillNewBomb pl}
     where   n = timeTillExplosionPlayer pl
@@ -107,9 +123,8 @@ replaceTimer n (x:xs) | x == 0    = n: xs
                       | otherwise = x : replaceTimer n xs
                     
 
-canDropBomb :: Player -> Bool
-canDropBomb pl  | 0 `elem` timeTillNewBomb pl   = True
-                | otherwise                     = False
+
+--PLAYER VISUALIZATION--
 
 -- Returns a list of pictures that represent a walking direction
 playerWalkingPictures :: Player -> [Picture]

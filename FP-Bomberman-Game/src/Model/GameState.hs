@@ -119,8 +119,9 @@ module Model.GameState where
     --Checks if an explosion collides with Fields in Grid
     --Uses RNG to randomly drop Powerups when an explosion collides with a stone block
     checkCollisionEx :: StdGen -> Grid -> Explosion -> (Explosion,[PowerUp])
-    checkCollisionEx gen [] ex     = (moveExplosion ex,[])
-    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex == Destructed 
+    checkCollisionEx gen [] ex      | explosionStatus ex == Mid = (ex, [])
+                                    | otherwise =  (moveExplosion ex,[])
+    checkCollisionEx gen (x:xs) ex  | checkCollision ex x && explosionStatus ex /= Moving 
                                             = (ex, []) --explosion cannot move through blocks if it has already destroyed a stone block
                                     | checkCollision ex x && gameObject x == StoneBlock 
                                             = (setExplosionDestructed $ moveExplosion ex, dropPowerUp (snd $ next gen) $ getPos x)
@@ -160,7 +161,7 @@ module Model.GameState where
     
     
     
-     --BOMBS VS GRID--
+    --EXPLOSIONS VS GRID--
 
     --If Explosion collides with stoneBlock, remove stoneblock from grid
     checkDestruction :: Grid -> Explosion -> Grid
@@ -203,6 +204,7 @@ module Model.GameState where
                             | checkCollisionSurr p $ grid gs           = p
                             | otherwise                                = movePlayerInDir p
                             where aliveEnemies = filter (\x -> health x == Alive) (enemies gs)
+                                    
 
 
     --Checks if Player collides with an enemy
@@ -245,8 +247,9 @@ module Model.GameState where
     calculateScore gs | currentState gs == Victory =  round (20000.0 - (elapsedTime gs * 100.0))
                       | otherwise                  =  round (0.0 + (elapsedTime gs * 10.0))
 
-                      
+
     --CREATE RANDOM NUMBERS--
+
     --Used for enemy movement and powerups
     withRandom :: (StdGen -> (Int, StdGen)) -> GameState -> (Int, GameState)
     withRandom f gs = let (res, g') = f (gen gs)

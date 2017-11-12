@@ -32,14 +32,17 @@ instance Renderizable PowerUp where
         render (PowerUp x ExtraBomb)    = translate' x $ png "res/powerup-extra-bomb.png"
         render (PowerUp x FasterBomb)    = translate' x $ png "res/powerup-faster-bomb.png"
         
-
+--applies the powerup-effect on a player
+--SpeedBoost    : increases player velocity
+--ExtraBomb     : player can drop an extra bomb
+--FasterBomb    : decreases time till a bomb explodes
 applyEffectOnPlayer :: PowerUp -> Player -> Player
-applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = max 15 (5 + velocity pl)}
+applyEffectOnPlayer (PowerUp _ SpeedBoost) pl  = pl { velocity = min 15 (5 + velocity pl)}
 applyEffectOnPlayer (PowerUp _ ExtraBomb) pl   = pl { timeTillNewBomb = 0 : (timeTillNewBomb pl)}
-applyEffectOnPlayer (PowerUp _ FasterBomb) pl   = pl { explosionSpeed = max 12 $(explosionSpeed pl)-5}
+applyEffectOnPlayer (PowerUp _ FasterBomb) pl   = pl { timeTillExplosionPlayer = max 12 $(timeTillExplosionPlayer pl)-5}
 
 
-
+--randomly drops one of the powerups
 addNewPowerUp :: Pos -> StdGen -> PowerUp
 addNewPowerUp pos r | rng == 0  = PowerUp pos SpeedBoost
                     | rng == 1  = PowerUp pos FasterBomb
